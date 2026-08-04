@@ -1,0 +1,78 @@
+import type { MenuItem } from '@/types';
+
+/**
+ * Configuration déclarative du menu principal du Sidebar.
+ *
+ * Centraliser la structure ici permet d'ajouter/retirer un menu ou un
+ * sous-menu sans toucher au composant Sidebar lui-même (Open/Closed Principle).
+ */
+export const menuItems: MenuItem[] = [
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    icon: 'pi pi-chart-line',
+    path: '/',
+  },
+  {
+    id: 'home',
+    label: 'Accueil',
+    icon: 'pi pi-home',
+    path: '/home',
+  },
+  {
+    id: 'products',
+    label: 'Produits',
+    icon: 'pi pi-box',
+    children: [
+      { id: 'products-categories', label: 'Catégories', icon: 'pi pi-tags', path: '/products/categories' },
+      { id: 'products-unites-mesure', label: 'Unités de mesure', icon: 'pi pi-calculator', path: '/products/unite_mesure' },
+      { id: 'products-conditionnements', label: 'Conditionnements', icon: 'pi pi-box', path: '/products/conditionnement' },
+    ],
+  },
+  {
+    id: 'clients',
+    label: 'Clients',
+    icon: 'pi pi-users',
+    children: [
+      { id: 'clients-list', label: 'Liste des clients', icon: 'pi pi-address-book', path: '/clients/list' },
+      { id: 'clients-groups', label: 'Groupes clients', icon: 'pi pi-sitemap', path: '/clients/groups' },
+    ],
+  },
+  {
+    id: 'purchases',
+    label: 'Achats',
+    icon: 'pi pi-cart-plus',
+    children: [
+      { id: 'purchases-orders', label: 'Bons de commande', icon: 'pi pi-file', path: '/purchases/orders' },
+      { id: 'purchases-suppliers', label: 'Fournisseurs', icon: 'pi pi-truck', path: '/purchases/suppliers' },
+    ],
+  },
+  {
+    id: 'stock',
+    label: 'Stock',
+    icon: 'pi pi-warehouse',
+    children: [
+      { id: 'stock-inventory', label: 'Inventaire', icon: 'pi pi-list-check', path: '/stock/inventory' },
+      { id: 'stock-movements', label: 'Mouvements', icon: 'pi pi-arrow-right-arrow-left', path: '/stock/movements' },
+    ],
+  },
+  {
+    id: 'accounting',
+    label: 'Comptabilité',
+    icon: 'pi pi-wallet',
+    children: [
+      { id: 'accounting-invoices', label: 'Factures', icon: 'pi pi-receipt', path: '/accounting/invoices' },
+      { id: 'accounting-payments', label: 'Règlements', icon: 'pi pi-credit-card', path: '/accounting/payments' },
+    ],
+  },
+  {
+    id: 'administration',
+    label: 'Administration',
+    icon: 'pi pi-cog',
+    children: [
+      { id: 'admin-users', label: 'Utilisateurs', icon: 'pi pi-user', path: '/administration/users' },
+      { id: 'admin-roles', label: 'Rôles & permissions', icon: 'pi pi-shield', path: '/administration/roles' },
+      { id: 'admin-logs', label: "Journaux d'activité", icon: 'pi pi-history', path: '/administration/logs' },
+    ],
+  },
+];
