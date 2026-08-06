@@ -20,13 +20,13 @@ export const menuItems: MenuItem[] = [
     path: '/home',
   },
   {
-    id: 'products',
-    label: 'Produits',
-    icon: 'pi pi-box',
+    id: 'compta',
+    label: 'Comptabilité',
+    icon: 'pi pi-calculator',
     children: [
-      { id: 'products-categories', label: 'Catégories', icon: 'pi pi-tags', path: '/products/categories' },
-      { id: 'products-unites-mesure', label: 'Unités de mesure', icon: 'pi pi-calculator', path: '/products/unite_mesure' },
-      { id: 'products-conditionnements', label: 'Conditionnements', icon: 'pi pi-box', path: '/products/conditionnement' },
+      { id: 'compta-plancomptable', label: 'Plan comptable', icon: 'pi pi-sitemap', path: '/compta/compte' },
+      { id: 'compta-journal', label: 'Journal', icon: 'pi pi-book', path: '/compta/journal' }
+      
     ],
   },
   {
