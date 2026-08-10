@@ -4,6 +4,8 @@ import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { HomePage } from '@/pages/home/HomePage';
 import { PlanComptablePage } from '@/pages/compta/compte/PlanComptablePage';
 import { JournalPage } from '@/pages/compta/journal/JournalPage';
+import { SaisieEcriturePage } from '@/pages/ecritures/SaisieEcriturePage';
+import { ExercicePage } from '@/pages/exercice/ExercicePage';
 /**
  * Déclaration centralisée des routes. Le MainLayout englobe toutes les
  * pages (Sidebar/TopBar/BottomBar communs), chaque page n'affiche que
@@ -22,6 +24,8 @@ export const router = createBrowserRouter([
       { path: 'home', element: <HomePage /> },
       { path: 'compta/compte', element: <PlanComptablePage/> },
       { path: 'compta/journal', element: <JournalPage/> }, 
+      { path: 'compta/ecritures', element: <SaisieEcriturePage/> }, 
+      { path: 'compta/exercice', element: <ExercicePage/> }, 
     ],
   },
 ]);

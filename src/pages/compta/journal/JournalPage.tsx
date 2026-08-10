@@ -1,25 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
-import { Tag } from 'primereact/tag';
+import { Divider } from 'primereact/divider';
+import { ProgressSpinner } from 'primereact/progressspinner';
 import type { Journal, JournalFormValues } from '@/types';
 import { journalService } from '@/services/journal.service';
 import { Button } from '@/components/ui/button';
+import { ModalConfirm } from '@/components/ui/modal-confirm';
+import { Input } from '@/components/ui/input';
+import { CustomDataTable } from '@/components/ui/data-table';
 import { JournalForm } from '@/components/forms/JournalForm';
 
 export const JournalPage: React.FC = () => {
   const [journaux, setJournaux] = useState<Journal[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [editingJournal, setEditingJournal] = useState<JournalFormValues | null>(null);
+  const [dataFetching, setDataFetching] = useState<boolean>(true);
+  const [editingJournal, setEditingJournal] = useState<Journal | null>(null);
+  const [globalFilterValue, setGlobalFilterValue] = useState<string>('');
+
+  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
+  const [journalIdToDelete, setJournalIdToDelete] = useState<number | null>(null);
+  const [journalCodeToDelete, setJournalCodeToDelete] = useState<string>('');
 
   const chargerJournaux = async () => {
+    setDataFetching(true);
     try {
       const data = await journalService.getAllJournaux();
       setJournaux(data);
     } catch (error) {
-      console.error("Erreur de chargement des journaux", error);
+      console.error("Erreur de chargement", error);
+    } finally {
+      setDataFetching(false);
     }
   };
 
@@ -32,126 +44,167 @@ export const JournalPage: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleFormSubmit = async (values: JournalFormValues) => {
+  const handleOpenEdit = (journal: Journal) => {
+    setEditingJournal(journal);
+    setShowModal(true);
+  };
+
+  const handleOpenDeleteConfirm = (id: number, code: string) => {
+    setJournalIdToDelete(id);
+    setJournalCodeToDelete(code);
+    setDeleteModalVisible(true);
+  };
+
+  const handleExecuteSuppression = async () => {
+    if (!journalIdToDelete) return;
     setLoading(true);
     try {
-      await journalService.createJournal(values);
-      setShowModal(false);
+      await journalService.deleteJournal(journalIdToDelete);
+      setDeleteModalVisible(false);
+      setJournalIdToDelete(null);
       await chargerJournaux();
-    } catch (error) {
-      console.error("Erreur lors de la création du journal", error);
-    } finally  {
+    } catch (error: any) {
+      const msg = error.response?.headers['x-error-message'] || "Erreur de suppression";
+      alert(msg);
+    } finally {
       setLoading(false);
     }
   };
 
-  // Colonne dynamique Actions (remplace l'ancien statut)
+  const handleFormSubmit = async (values: JournalFormValues) => {
+    setLoading(true);
+    try {
+      if (editingJournal) {
+        await journalService.updateJournal(editingJournal.id, values);
+      } else {
+        await journalService.createJournal(values);
+      }
+      setShowModal(false);
+      setEditingJournal(null);
+      await chargerJournaux();
+    } catch (error) {
+      console.error("Erreur d'opération", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const actionBodyTemplate = (rowData: Journal) => {
     return (
       <div className="flex gap-1 justify-end">
         <Button 
-          type="button"
-          variant="ghost" 
-          size="sm"
-          className="h-8 w-8 p-0 text-sky-accent-500 hover:text-sky-accent-600 hover:bg-sky-accent-50/40 rounded-full"
-          onClick={() => {
-            setEditingJournal({ code: rowData.code, intitule: rowData.intitule, typeJournal: rowData.typeJournal });
-            setShowModal(true);
-          }}
-          title="Modifier"
+          type="button" variant="ghost" size="sm"
+          className="h-8 w-8 p-0 text-sky-accent-500 rounded-full cursor-pointer"
+          onClick={() => handleOpenEdit(rowData)} title="Modifier"
         >
           <i className="pi pi-pencil text-sm"></i>
         </Button>
         <Button 
-          type="button"
-          variant="ghost" 
-          size="sm"
-          className="h-8 w-8 p-0 text-red-accent-500 hover:text-red-700 hover:bg-red-50/40 rounded-full"
-          onClick={() => console.log('Demande de désactivation du journal ID:', rowData.id)}
-          title="Désactiver"
+          type="button" variant="ghost" size="sm"
+          className="h-8 w-8 p-0 text-red-accent-500 rounded-full cursor-pointer"
+          onClick={() => handleOpenDeleteConfirm(rowData.id, rowData.code)} title="Supprimer"
         >
-          <i className="pi pi-ban text-sm"></i>
+          <i className="pi pi-trash text-sm"></i>
         </Button>
       </div>
     );
   };
 
-  // Badge stylisé basé sur la nomenclature de votre palette d'ERP
   const typeTemplate = (rowData: Journal) => {
-    const labels: Record<string, { text: string; css: string }> = {
-      ACHATS: { text: 'Achats', css: 'bg-navy-50 text-navy-700' },
-      VENTES: { text: 'Ventes', css: 'bg-sky-accent-50 text-sky-accent-600' },
-      TRESORERIE: { text: 'Trésorerie', css: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30' },
-      OPERATIONS_DIVERSES: { text: 'O.D', css: 'bg-amber-accent-50 text-amber-accent-500 bg-amber-50' }
+    const labels: Record<string, string> = {
+      ACHATS: 'Achats', VENTES: 'Ventes', TRESORERIE: 'Trésorerie', OPERATIONS_DIVERSES: 'O.D'
     };
-    const info = labels[rowData.typeJournal] || { text: rowData.typeJournal, css: 'bg-gray-100' };
-    return <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${info.css}`}>{info.text}</span>;
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border bg-navy-50 text-navy-600 border-navy-100 dark:bg-navy-800/40 dark:text-navy-300 dark:border-navy-700/50">
+        {labels[rowData.typeJournal] || rowData.typeJournal}
+      </span>
+    );
   };
 
   const codeTemplate = (rowData: Journal) => {
-    return <span className="font-tabular font-bold tracking-wider text-navy-900 dark:text-white bg-navy-50/50 px-1.5 py-0.5 rounded-sm border border-navy-100/60">{rowData.code}</span>;
-  };
-
-  const renderEmptyState = () => {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center bg-white dark:bg-navy-900/20 rounded-xl border border-dashed border-navy-200 dark:border-navy-800 my-4 shadow-xs">
-        <div className="w-14 h-14 rounded-full bg-navy-50 dark:bg-navy-900/60 flex items-center justify-center mb-3 text-navy-400 dark:text-navy-500">
-          <i className="pi pi-book text-3xl"></i>
-        </div>
-        <h4 className="text-sm font-bold text-navy-800 dark:text-navy-200 mb-1">Aucun journal comptable</h4>
-        <p className="text-xs text-navy-400 dark:text-navy-500 max-w-xs mb-4">
-          Les journaux servent à segmenter vos écritures (Banque, Achats, Ventes). Ajoutez-en un pour commencer la saisie de pièces.
-        </p>
-        <Button variant="default" size="sm" onClick={handleOpenCreate}>
-          <i className="pi pi-plus text-xs mr-1.5"></i> Ajouter un journal
-        </Button>
+      <div className="font-tabular text-sm font-bold tracking-wider text-navy-800 dark:text-navy-200 pl-1">
+        {rowData.code}
       </div>
     );
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto flex flex-col gap-4">
-      {/* En-tête de page blanc encadré */}
-      <div className="flex justify-between items-center bg-white dark:bg-navy-900 p-4 rounded-xl border border-navy-100 dark:border-navy-800 shadow-xs">
-        <div>
-          <h2 className="text-base font-bold text-navy-900 dark:text-navy-50">Journaux Comptables</h2>
-          <p className="text-xs text-navy-400 dark:text-navy-500">{journaux.length} journal(aux) actif(s)</p>
+    <div className="p-6 max-w-7xl mx-auto">
+      <ModalConfirm
+        visible={deleteModalVisible}
+        title="Confirmation de suppression"
+        message={`Voulez-vous supprimer définitivement le journal ${journalCodeToDelete} ?`}
+        confirmLabel="Supprimer" cancelLabel="Annuler" variant="destructive" loading={loading}
+        onConfirm={handleExecuteSuppression}
+        onCancel={() => { setDeleteModalVisible(false); setJournalIdToDelete(null); }}
+      />
+      
+      <div className="bg-white dark:bg-navy-900 rounded-xl border border-navy-100 dark:border-navy-800 shadow-sm p-5 flex flex-col">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-base font-bold text-navy-900 dark:text-navy-50">Journaux Comptables</h2>
+            <p className="text-xs text-navy-400 dark:text-navy-500">
+              {dataFetching ? 'Chargement...' : `${journaux.length} journal(aux) configuré(s)`}
+            </p>
+          </div>
+          <Button variant="default" size="sm" onClick={handleOpenCreate}>
+            <i className="pi pi-plus text-xs mr-1.5"></i> Ajouter un journal
+          </Button>
         </div>
-        <Button variant="default" size="sm" onClick={handleOpenCreate}>
-          <i className="pi pi-plus text-xs mr-1.5"></i> Ajouter un journal
-        </Button>
+
+        <Divider className="my-4 border-navy-100 dark:border-navy-800" />
+
+        {dataFetching ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <ProgressSpinner 
+              style={{ width: '40px', height: '40px' }} strokeWidth="4" animationDuration=".8s"
+              pt={{ circle: { className: "stroke-navy-700 dark:stroke-sky-accent-500" } }}
+            />
+            <span className="text-xs text-navy-400 font-medium">Récupération des journaux...</span>
+          </div>
+        ) : journaux.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-10 text-center border border-dashed border-navy-200 rounded-lg">
+            <i className="pi pi-book text-2xl text-navy-400 mb-2"></i>
+            <h4 className="text-xs font-bold text-navy-800 mb-1">Aucun journal trouvé</h4>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <div className="relative w-full md:w-80">
+              <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-navy-300 text-xs"></i>
+              <Input
+                type="text" value={globalFilterValue}
+                onChange={(e) => setGlobalFilterValue(e.target.value)}
+                placeholder="Rechercher un journal..." className="pl-8 w-full"
+              />
+            </div>
+
+            <div className="rounded-lg overflow-hidden">
+              <CustomDataTable 
+                value={journaux} dataKey="id" globalFilter={globalFilterValue}
+                globalFilterFields={['code', 'intitule']}
+              >
+                <Column field="code" header="Code" body={codeTemplate} sortable style={{ width: '20%' }} />
+                <Column field="intitule" header="Intitulé du journal" sortable style={{ width: '50%' }} />
+                <Column field="typeJournal" header="Type de flux" body={typeTemplate} sortable style={{ width: '18%' }} />
+                <Column header="Actions" body={actionBodyTemplate} style={{ width: '12%' }} className="text-right" headerClassName="justify-end" />
+              </CustomDataTable>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Grille ou panneau vide */}
-      {journaux.length === 0 ? (
-        renderEmptyState()
-      ) : (
-        <div className="bg-white dark:bg-navy-900 rounded-xl border border-navy-100 dark:border-navy-800 shadow-xs overflow-hidden">
-          <DataTable value={journaux} paginator rows={10} dataKey="id" responsiveLayout="scroll" className="p-datatable-sm">
-            <Column field="code" header="Code" body={codeTemplate} sortable style={{ width: '15%' }} />
-            <Column field="intitule" header="Intitulé du journal" sortable style={{ width: '45%' }} />
-            <Column field="typeJournal" header="Type de flux" body={typeTemplate} sortable style={{ width: '25%' }} />
-            <Column header="Actions" body={actionBodyTemplate} style={{ width: '15%' }} className="text-right" headerClassName="justify-end" />
-          </DataTable>
-        </div>
-      )}
-
-      {/* Fenêtre Modale d'Action */}
       <Dialog 
-        header={editingJournal ? "Modifier le journal" : "Ajouter un journal de mesure"} 
-        visible={showModal} 
-        style={{ width: '420px' }} 
-        modal 
-        onHide={() => setShowModal(false)}
-        draggable={false}
-        resizable={false}
-        closable={!loading}
+        header={editingJournal ? "Modifier le journal" : "Ajouter un journal"} 
+        visible={showModal} style={{ width: '420px' }} modal 
+        onHide={() => { setShowModal(false); setEditingJournal(null); }}
+        draggable={false} resizable={false} closable={!loading}
       >
         <JournalForm 
-          onSubmit={handleFormSubmit} 
-          onCancel={() => setShowModal(false)} 
-          loading={loading}
-          initialValues={editingJournal || undefined}
+          onSubmit={handleFormSubmit} onCancel={() => { setShowModal(false); setEditingJournal(null); }} loading={loading}
+          initialValues={editingJournal ? {
+            code: editingJournal.code, intitule: editingJournal.intitule, typeJournal: editingJournal.typeJournal
+          } : undefined}
         />
       </Dialog>
     </div>

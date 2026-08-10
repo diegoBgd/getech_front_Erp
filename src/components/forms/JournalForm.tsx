@@ -33,77 +33,51 @@ export const JournalForm: React.FC<JournalFormProps> = ({ onSubmit, onCancel, lo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.code.trim() && formData.intitule.trim() && formData.typeJournal) {
+    if (formData.code.trim() && formData.intitule.trim()) {
       onSubmit(formData);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      {/* Code du Journal */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="code" className="text-xs font-semibold text-navy-700 dark:text-navy-300">
-          Code Journal <span className="text-red-accent-500">*</span>
+          Code Journal *
         </label>
         <Input 
-          id="code" 
-          value={formData.code} 
+          id="code" value={formData.code} 
           onChange={(e) => setFormData({ ...formData, code: e.target.value })} 
-          placeholder="Ex: AC, BQ, VT, OD"
-          maxLength={10}
-          disabled={loading}
-          required 
+          placeholder="Ex: AC, BQ, VT" maxLength={10} disabled={loading || !!initialValues} required 
         />
       </div>
 
-      {/* Intitulé / Libellé */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="intitule" className="text-xs font-semibold text-navy-700 dark:text-navy-300">
-          Intitulé du journal <span className="text-red-accent-500">*</span>
+          Intitulé du journal *
         </label>
         <Input 
-          id="intitule" 
-          value={formData.intitule} 
+          id="intitule" value={formData.intitule} 
           onChange={(e) => setFormData({ ...formData, intitule: e.target.value })} 
-          placeholder="Ex: Journal de la Banque Commerciale"
-          disabled={loading}
-          required 
+          placeholder="Ex: Banque Commerciale" disabled={loading} required 
         />
       </div>
 
-      {/* Type de Journal via le Select unstyled unifié */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="typeJournal" className="text-xs font-semibold text-navy-700 dark:text-navy-300">
-          Type d'opérations <span className="text-red-accent-500">*</span>
+          Type d'opérations *
         </label>
         <Select
-          id="typeJournal"
-          value={formData.typeJournal}
-          options={typeJournalOptions}
-          onChange={(e) => setFormData({ ...formData, typeJournal: e.value })}
-          placeholder="Sélectionnez la catégorie de flux"
-          disabled={loading}
+          id="typeJournal" value={formData.typeJournal} options={typeJournalOptions}
+          onChange={(e) => setFormData({ ...formData, typeJournal: e.value })} disabled={loading}
         />
       </div>
 
-      {/* Pied de page de la modale */}
       <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-navy-100 dark:border-navy-800">
-        <Button 
-          type="button" 
-          variant="outline" 
-          size="sm"
-          onClick={onCancel} 
-          disabled={loading}
-        >
+        <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={loading}>
           Annuler
         </Button>
-        <Button 
-          type="submit" 
-          variant="default" 
-          size="sm"
-          disabled={loading}
-        >
-          {loading ? 'Enregistrement...' : initialValues ? 'Modifier' : 'Ajouter'}
+        <Button type="submit" variant="default" size="sm" disabled={loading}>
+          {loading ? 'Chargement...' : initialValues ? 'Modifier' : 'Ajouter'}
         </Button>
       </div>
     </form>

@@ -20,12 +20,23 @@ export const menuItems: MenuItem[] = [
     path: '/home',
   },
   {
+    id: 'parametre',
+    label: 'Paramètres',
+    icon: 'pi pi-sliders-h',
+    children: [
+      { id: 'compta-exercice', label: 'Exercice comptable', icon: 'pi pi-calendar', path: '/compta/exercice' }
+     
+      
+    ],
+  },
+  {
     id: 'compta',
     label: 'Comptabilité',
     icon: 'pi pi-calculator',
     children: [
       { id: 'compta-plancomptable', label: 'Plan comptable', icon: 'pi pi-sitemap', path: '/compta/compte' },
-      { id: 'compta-journal', label: 'Journal', icon: 'pi pi-book', path: '/compta/journal' }
+      { id: 'compta-journal', label: 'Journal', icon: 'pi pi-book', path: '/compta/journal' },
+      { id: 'compta-ecriture', label: 'Saisie des écritures', icon: 'pi pi-file-edit', path: '/compta/ecritures' }
       
     ],
   },

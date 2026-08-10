@@ -11,7 +11,7 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
 
-  /* ---- Palette "Waangu" : navy professionnel + accent émeraude ----
+  /* ---- Palette "Gatech" : navy professionnel + accent émeraude ----
      Choix pensé pour un ERP : navy = confiance/structure, bleu ciel = actions/sélection,
      ambre = attention, rouge = danger. Évite le duo cream/terracotta et le noir/néon
      trop associés aux interfaces générées par défaut. */
@@ -66,4 +66,10 @@ body {
 .font-tabular {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+/* À mettre à jour dans votre src/index.css */
+.p-datatable .p-datatable-thead > tr > th {
+  /* py-4 augmente l'espace en haut et en bas du texte du header */
+  @apply bg-navy-50/40 text-navy-600 font-semibold px-4 py-4 text-[11px] uppercase tracking-wider border-b border-navy-100 text-left transition-colors;
+  @apply dark:bg-navy-900/30 dark:text-navy-400 dark:border-navy-800;
 }

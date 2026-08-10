@@ -2,7 +2,7 @@ import type { Journal, JournalFormValues } from '@/types';
 import axios from 'axios';
 
 
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/journaux`;
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/erp/compta/journaux`;
 
 export const journalService = {
   // Récupérer tous les journaux du système
@@ -19,5 +19,13 @@ export const journalService = {
     };
     const response = await axios.post<Journal>(API_URL, formattedData);
     return response.data;
+  },
+  updateJournal: async (id: number, data: JournalFormValues): Promise<Journal> => {
+    const response = await axios.put<Journal>(`${API_URL}/${id}`, data);
+    return response.data;
+  },
+
+  deleteJournal: async (id: number): Promise<void> => {
+    await axios.delete(`${API_URL}/${id}`);
   }
 };
