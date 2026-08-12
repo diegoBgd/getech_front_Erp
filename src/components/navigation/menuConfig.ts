@@ -24,7 +24,8 @@ export const menuItems: MenuItem[] = [
     label: 'Paramètres',
     icon: 'pi pi-sliders-h',
     children: [
-      { id: 'compta-exercice', label: 'Exercice comptable', icon: 'pi pi-calendar', path: '/compta/exercice' }
+      { id: 'compta-exercice', label: 'Exercice comptable', icon: 'pi pi-calendar', path: '/compta/exercice' },
+      { id: 'compta-parametreod', label: 'Paramètres specifiques', icon: 'pi pi-compass', path: '/compta/parametreod' }
      
       
     ],
@@ -36,7 +37,8 @@ export const menuItems: MenuItem[] = [
     children: [
       { id: 'compta-plancomptable', label: 'Plan comptable', icon: 'pi pi-sitemap', path: '/compta/compte' },
       { id: 'compta-journal', label: 'Journal', icon: 'pi pi-book', path: '/compta/journal' },
-      { id: 'compta-ecriture', label: 'Saisie des écritures', icon: 'pi pi-file-edit', path: '/compta/ecritures' }
+      { id: 'compta-ecriture', label: 'Saisie des écritures', icon: 'pi pi-file-edit', path: '/compta/ecritures' },
+      { id: 'compta-grandlivre', label: 'Grand livre', icon: 'pi pi-book', path: '/compta/grandlivre' }
       
     ],
   },

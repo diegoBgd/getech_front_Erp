@@ -93,7 +93,7 @@ export const SaisieEcritureForm: React.FC<SaisieFormProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-navy-50/30 dark:bg-navy-950/20 rounded-lg">
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-navy-700">Journal *</label>
-          <Select value={codeJournal} options={journaux} onChange={(e) => setCodeJournal(e.value)} placeholder="Journal..." disabled={isReadOnly} required />
+          <Select value={codeJournal} options={journaux} filter onChange={(e) => setCodeJournal(e.value)} placeholder="Journal..." disabled={isReadOnly} required />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-navy-700">Exercice *</label>
@@ -117,7 +117,7 @@ export const SaisieEcritureForm: React.FC<SaisieFormProps> = ({
               <th style={{ width: '40%' }}>Libellé de ligne</th>
               <th style={{ width: '13%' }} className="text-right">Débit</th>
               <th style={{ width: '13%' }} className="text-right">Crédit</th>
-              <th style={{ width: '9%' }} className="text-center">Action</th>
+              <th style={{ width: '5%' }} className="text-center">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-navy-50 dark:divide-navy-800/40 [&_td]:p-2 [&_td]:border-r [&_td]:border-navy-100 dark:[&_td]:border-navy-800/60 last:[&_td]:border-r-0">
@@ -181,6 +181,7 @@ export const SaisieEcritureForm: React.FC<SaisieFormProps> = ({
         <div className="flex justify-end mt-2">
           <Button type="submit" variant="default" size="sm" disabled={loading || !estEquilibre || !codeJournal || !idExercice}>
             {loading ? 'Validation...' : 'Enregistrer la Pièce'}
+ 
           </Button>
         </div>
       )}
