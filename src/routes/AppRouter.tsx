@@ -8,6 +8,8 @@ import { SaisieEcriturePage } from '@/pages/ecritures/SaisieEcriturePage';
 import { ExercicePage } from '@/pages/exercice/ExercicePage';
 import { ParametresPage } from '@/pages/parametreod/ParametresPage';
 import { GrandLivrePage } from '@/pages/grandlivre/GrandLivrePage';
+import { BalancePage } from '@/pages/balance/BalancePage';
+import { RubriqueFinancierePage } from '@/pages/rubrique/RubriqueFinancierePage';
 /**
  * Déclaration centralisée des routes. Le MainLayout englobe toutes les
  * pages (Sidebar/TopBar/BottomBar communs), chaque page n'affiche que
@@ -30,6 +32,8 @@ export const router = createBrowserRouter([
       { path: 'compta/exercice', element: <ExercicePage/> }, 
       { path: 'compta/parametreod', element: <ParametresPage/> }, 
       { path: 'compta/grandlivre', element: <GrandLivrePage/> }, 
+      { path: 'compta/balance', element: <BalancePage/> },
+      { path: 'compta/rubrique', element: <RubriqueFinancierePage/> }, 
     ],
   },
 ]);
