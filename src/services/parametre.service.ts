@@ -2,7 +2,7 @@ import type { ParametreOD } from '@/types';
 import axios from 'axios';
 
 
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/erp/compta/`;
+const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/erp/compta/parametres`;
 
 export const parametreService = {
   // Récupérer la configuration courante ou les valeurs par défaut

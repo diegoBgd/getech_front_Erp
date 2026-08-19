@@ -3,7 +3,9 @@ import { Divider } from 'primereact/divider';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
 import { RubriqueForm } from '../../components/forms/RubriqueForm';
+
 import { Select } from '../../components/ui/select';
+import { ModalConfirm } from '../../components/ui/modal-confirm';
 import { rubriqueService, type RubriqueFinanciere } from '@/services/rubrique.service';
 import { RubriqueTable } from './RubriqueTable';
 
@@ -12,33 +14,20 @@ export const RubriqueFinancierePage: React.FC = () => {
   const [rubriques, setRubriques] = useState<RubriqueFinanciere[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Configuration pour le sélecteur d'en-tête ERP
+  // États pour piloter la visibilité et la cible de votre ModalConfirm local
+  const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false);
+  const [selectedIdToDelete, setSelectedIdToDelete] = useState<number | null>(null);
+
   const optionsEtat = [
     { label: 'Le Bilan Comptable', value: 'BILAN' },
     { label: 'Le Compte de Résultat', value: 'COMPTE_RESULTAT' }
   ];
 
-  const aplatirRubriques = (nodes: RubriqueFinanciere[]): RubriqueFinanciere[] => {
-    if (!nodes || !Array.isArray(nodes)) return [];
-    let result: RubriqueFinanciere[] = [];
-    
-    nodes.forEach(node => {
-      result.push(node);
-      if (node.enfants && node.enfants.length > 0) {
-        result = result.concat(aplatirRubriques(node.enfants));
-      }
-    });
-    
-    return result;
-  };
-
   const chargerDonnees = async () => {
     setLoading(true);
     try {
       const data = await rubriqueService.getParEtat(typeEtat);
-      const listeBrute = Array.isArray(data) ? data : [];
-      const listeAplatie = aplatirRubriques(listeBrute);
-      setRubriques(listeAplatie);
+      setRubriques(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Erreur de récupération des rubriques", err);
       setRubriques([]);
@@ -51,18 +40,41 @@ export const RubriqueFinancierePage: React.FC = () => {
     chargerDonnees();
   }, [typeEtat]);
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Voulez-vous vraiment supprimer cette règle de calcul ?")) return;
+  // Déclencheur de suppression : Charge l'ID et bascule la visibilité
+  const handleDeleteTrigger = (id: number) => {
+    setSelectedIdToDelete(id);
+    setIsConfirmOpen(true);
+  };
+
+  // Action validée depuis le composant ModalConfirm
+  const handleConfirmDelete = async () => {
+    if (!selectedIdToDelete) return;
     try {
-      await rubriqueService.delete(id);
+      await rubriqueService.delete(selectedIdToDelete);
       chargerDonnees();
     } catch (err) {
       console.error("Erreur lors de la suppression", err);
+    } finally {
+      setIsConfirmOpen(false);
+      setSelectedIdToDelete(null);
     }
   };
 
   return (
     <div className="p-6 max-w-7xl mx-auto animate-fade-in">
+      
+      {/* 💡 APPLICATION STRICTE DES PROPRIÉTÉS DU MODALCONFIRM DE L'ERP */}
+      <ModalConfirm
+        visible={isConfirmOpen}
+        title="Confirmation de suppression"
+        message="Voulez-vous vraiment supprimer définitivement cette règle de calcul ? Toutes les liaisons associées seront rompues."
+        variant="destructive"
+        confirmLabel="Supprimer"
+        cancelLabel="Annuler"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setIsConfirmOpen(false)}
+      />
+
       <div className="bg-white dark:bg-navy-900 rounded-xl border border-navy-100 dark:border-navy-800 p-6 flex flex-col shadow-sm">
         
         {/* EN-TÊTE CONFIGURATION */}
@@ -77,12 +89,12 @@ export const RubriqueFinancierePage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-navy-400 uppercase tracking-wider">État :</span>
+            <span className="text-xs font-bold text-navy-400  tracking-wider">État :</span>
             <Select 
               value={typeEtat} 
               options={optionsEtat}
               onChange={(e: any) => setTypeEtat(e.value)} 
-              className="w-[200px] text-xs font-bold uppercase h-[32px]" 
+              className="w-[200px] text-xs   h-[32px]" 
             />
           </div>
         </div>
@@ -103,7 +115,7 @@ export const RubriqueFinancierePage: React.FC = () => {
               Aucune règle de calcul n'est encore définie pour cet état financier. Saisissez votre première ligne ci-dessus.
             </div>
           ) : (
-            <RubriqueTable rubriques={rubriques} onDelete={handleDelete} />
+            <RubriqueTable rubriques={rubriques} onDelete={handleDeleteTrigger} />
           )}
         </div>
 

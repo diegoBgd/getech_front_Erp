@@ -82,7 +82,9 @@ export const ParametresForm: React.FC<ParametresFormProps> = ({
 
       <div className="flex justify-end gap-2 mt-2 pt-3 border-t border-navy-100">
         <Button type="submit" variant="default" size="sm" disabled={loading}>
-          {loading ? 'Sauvegarde...' : 'Enregistrer la Configuration'}
+          <i className="pi pi-save mr-2 text-xs"></i>
+          {loading ? 'Enregistrement encours...' : 'Enregistrer'}
+          
         </Button>
       </div>
     </form>

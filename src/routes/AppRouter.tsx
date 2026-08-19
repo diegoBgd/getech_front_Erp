@@ -10,6 +10,7 @@ import { ParametresPage } from '@/pages/parametreod/ParametresPage';
 import { GrandLivrePage } from '@/pages/grandlivre/GrandLivrePage';
 import { BalancePage } from '@/pages/balance/BalancePage';
 import { RubriqueFinancierePage } from '@/pages/rubrique/RubriqueFinancierePage';
+import { BilanPage } from '@/pages/bilan/BilanPage';
 /**
  * Déclaration centralisée des routes. Le MainLayout englobe toutes les
  * pages (Sidebar/TopBar/BottomBar communs), chaque page n'affiche que
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
       { path: 'compta/grandlivre', element: <GrandLivrePage/> }, 
       { path: 'compta/balance', element: <BalancePage/> },
       { path: 'compta/rubrique', element: <RubriqueFinancierePage/> }, 
+      { path: 'compta/bilan', element: <BilanPage/> }, 
     ],
   },
 ]);
