@@ -40,7 +40,8 @@ export const menuItems: MenuItem[] = [
       { id: 'compta-ecriture', label: 'Saisie des écritures', icon: 'pi pi-file-edit', path: '/compta/ecritures' },
       { id: 'compta-grandlivre', label: 'Grand livre', icon: 'pi pi-book', path: '/compta/grandlivre' },
       { id: 'compta-balance', label: 'Balance', icon: 'pi pi-book', path: '/compta/balance' },
-      { id: 'compta-bilan', label: 'Bilan', icon: 'pi pi-book', path: '/compta/bilan' }
+      { id: 'compta-bilan', label: 'Bilan', icon: 'pi pi-book', path: '/compta/bilan' },
+      { id: 'compta-resultat', label: 'Compte resultat', icon: 'pi pi-book', path: '/compta/resultat' }
       
     ],
   },

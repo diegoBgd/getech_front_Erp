@@ -5,6 +5,7 @@ import React from 'react';
 interface PassifTableProps {
     lignes: LigneSyntheseDto[];
     formatMontant: (valeur: number) => string;
+formatDate: (dateStr: string) => string;
 }
 
 export const BilanPassifTable: React.FC<PassifTableProps> = ({ lignes, formatMontant }) => {

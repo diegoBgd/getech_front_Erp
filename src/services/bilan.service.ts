@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 
-const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/erp/compta/balance`;
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/erp/compta/etats-synthese`;
 
 //  1. STRUCTURE DE L'ACTIF (4 COLONNES DE MONTANTS)
 export interface LigneActifDto {
@@ -38,7 +38,7 @@ export const bilanService = {
   ): Promise<BilanCompletResponseDto> => {
     
     const response = await axios.get<BilanCompletResponseDto>(
-      `${API_BASE}/${exerciceId}`,
+      `${API_BASE}/bilan/${exerciceId}`,
       {
         params: { dateFin } // Format attendu par Spring : 'YYYY-MM-DD'
       }

@@ -5,20 +5,19 @@ import { Input } from '../../components/ui/input';
 import { Select } from '../../components/ui/select';
 import { Button } from '../../components/ui/button';
 import type { Exercice } from '@/types/exercice.types';
-import { bilanService, type BilanCompletResponseDto } from '@/services/bilan.service';
+import { resultatService, type ResultatResponseDto } from '@/services/resultat.service';
 import { exerciceService } from '@/services/exercice.service';
-import { BilanActifTable } from './BilanActifTable';
-import { BilanPassifTable } from './BilanPassifTable';
+import { ResultatTable } from './ResultatTable';
 
-export const BilanPage: React.FC = () => {
-  // --- ÉTATS CRITIQUES ---
+
+export const CompteResultatPage: React.FC = () => {
   const [exercices, setExercices] = useState<Exercice[]>([]);
   const [exerciceSelectionne, setExerciceSelectionne] = useState<number | null>(null);
   const [dateFin, setDateFin] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [donnees, setDonnees] = useState<BilanCompletResponseDto | null>(null);
+  const [donnees, setDonnees] = useState<ResultatResponseDto | null>(null);
 
-  // --- UTILS DE FORMATAGE ---
+  //  Formatage uniforme imposé DD/MM/YYYY
   const formatDate = (dateStr: string): string => {
     if (!dateStr) return '-';
     const parties = dateStr.split('-');
@@ -28,60 +27,46 @@ export const BilanPage: React.FC = () => {
 
   const formatMontant = (valeur: number) => {
     if (valeur === 0 || !valeur) return '-';
-    return new Intl.NumberFormat('fr-FR', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(valeur);
+    return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(valeur);
   };
 
-  // --- CHARGEMENT DU RÉFÉRENTIEL ---
   const chargerExercices = async () => {
     try {
       const liste = await exerciceService.getAll();
       setExercices(liste);
-      
       if (liste && liste.length > 0) {
-        const premier = liste[0];
-        setExerciceSelectionne(premier.id);
-        setDateFin(premier.dateFin);
+        setExerciceSelectionne(liste[0].id);
+        setDateFin(liste[0].dateFin);
       }
     } catch (err) {
-      console.error("Erreur d'extraction des exercices", err);
+      console.error("Erreur de chargement des exercices", err);
     }
   };
 
-  // --- CALCUL DU BILAN ---
-  const executerCalculBilan = async () => {
+  const executerCalculResultat = async () => {
     if (!exerciceSelectionne || !dateFin) return;
     setLoading(true);
     try {
-      const data = await bilanService.extraireBilan(exerciceSelectionne, dateFin);
+      const data = await resultatService.extraireCompteResultat(exerciceSelectionne, dateFin);
       setDonnees(data);
     } catch (err) {
-      console.error("Erreur de calcul du bilan récursif", err);
+      console.error("Erreur de calcul du compte de résultat", err);
       setDonnees(null);
     } finally {
       setLoading(false);
     }
   };
 
-  // Chargement des listes au montage du composant
-  useEffect(() => {
-    chargerExercices();
-  }, []);
+  useEffect(() => { chargerExercices(); }, []);
 
-  // Déclenchement automatique si l'utilisateur change d'exercice dans la liste déroulante
   useEffect(() => {
     if (exerciceSelectionne) {
       const exInfo = exercices.find(e => e.id === exerciceSelectionne);
-      if (exInfo) {
-        setDateFin(exInfo.dateFin);
-      }
-      executerCalculBilan();
+      if (exInfo) setDateFin(exInfo.dateFin);
+      executerCalculResultat();
     }
   }, [exerciceSelectionne]);
 
-  // Transformation pour le composant Select ERP
   const optionsExercices = exercices.map(ex => ({
     label: `${ex.libelle} [${ex.code}]`,
     value: ex.id
@@ -91,18 +76,18 @@ export const BilanPage: React.FC = () => {
     <div className="p-6 max-w-7xl mx-auto animate-fade-in">
       <div className="bg-white dark:bg-navy-900 rounded-xl border border-navy-100 dark:border-navy-800 p-6 flex flex-col shadow-sm">
         
-        {/* EN-TÊTE DE PAGE */}
+        {/* EN-TÊTE DE LA PAGE */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 className="text-base font-bold text-navy-900 dark:text-navy-50">
-              Bilan Comptable Réglementaire
+              Compte de Résultat (SIG)
             </h2>
             <p className="text-xs text-navy-400 dark:text-navy-500">
-              Période arrêtée au : {dateFin ? formatDate(dateFin) : '-'}
+              Analyse de la performance économique arrêtée au : {dateFin ? formatDate(dateFin) : '-'}
             </p>
           </div>
 
-          {/* FILTRES DE COMMANDE */}
+          {/* SÉLECTEURS DE PILOTAGE */}
           <div className="flex flex-wrap items-center gap-3">
             <div className="w-[240px]">
               <Select 
@@ -124,7 +109,7 @@ export const BilanPage: React.FC = () => {
             <Button 
               variant="default" 
               size="sm" 
-              onClick={executerCalculBilan} 
+              onClick={executerCalculResultat} 
               disabled={loading || !exerciceSelectionne}
               className="font-bold uppercase text-xs h-[38px] px-4"
             >
@@ -135,26 +120,24 @@ export const BilanPage: React.FC = () => {
 
         <Divider className="my-4 border-navy-100 dark:border-navy-800" />
 
-        {/* INDICATEUR DE TRAITEMENT ASYNCHRONE */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-6 gap-2 bg-navy-50/10 dark:bg-navy-900/10 rounded-xl mb-4">
             <ProgressSpinner style={{ width: '28px' }} />
-            <span className="text-[11px] text-navy-400">Interrogation récursive de la balance...</span>
+            <span className="text-[11px] text-navy-400">Calcul des soldes intermédiaires de gestion...</span>
           </div>
         )}
 
-        {/* 💡 SÉCURISATION FIXE : Les structures des tables s'affichent TOUJOURS.
-            Si 'donnees' est vide, on envoie un tableau à plat pour forcer le rendu visuel. */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-          <BilanActifTable 
-            lignes={donnees?.actif || []} 
+        {/* AFFICHAGE DES DEUX MASSES DE L'ACTIVITÉ */}
+        <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
+          <ResultatTable 
+            titre=" Compte de Charges (Classes 6)" 
+            lignes={donnees?.charges || []} 
             formatMontant={formatMontant} 
-            formatDate={formatDate} 
           />
-          <BilanPassifTable 
-            lignes={donnees?.passif || []} 
+          <ResultatTable 
+            titre=" Compte de Produits (Classes 7)" 
+            lignes={donnees?.produits || []} 
             formatMontant={formatMontant} 
-            formatDate={formatDate} 
           />
         </div>
 

@@ -11,5 +11,8 @@ export const exerciceService = {
   create: async (data: ExerciceFormValues): Promise<Exercice> => {
     const res = await axios.post<Exercice>(API_URL, data);
     return res.data;
-  }
+  },
+  delete: async (id: number): Promise<void> => {
+  await axios.delete(`${API_URL}/${id}`);
+}
 };
