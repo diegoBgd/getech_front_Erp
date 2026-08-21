@@ -22,11 +22,11 @@ export const menuItems: MenuItem[] = [
   {
     id: 'parametre',
     label: 'Paramètres',
-    icon: 'pi pi-sliders-h',
+    icon: 'pi pi-cog',
     children: [
       { id: 'compta-exercice', label: 'Exercice comptable', icon: 'pi pi-calendar', path: '/compta/exercice' },
-      { id: 'compta-parametreod', label: 'Paramètres specifiques', icon: 'pi pi-compass', path: '/compta/parametreod' },
-      { id: 'compta-rubrique', label: 'Paramètres rubrique', icon: 'pi pi-compass', path: '/compta/rubrique' }
+      { id: 'compta-parametreod', label: 'Paramètres specifiques', icon: 'pi pi-share-alt', path: '/compta/parametreod' },
+      { id: 'compta-rubrique', label: 'Paramètres rubrique', icon: 'pi pi-palette', path: '/compta/rubrique' }
       
     ],
   },
@@ -36,12 +36,12 @@ export const menuItems: MenuItem[] = [
     icon: 'pi pi-calculator',
     children: [
       { id: 'compta-plancomptable', label: 'Plan comptable', icon: 'pi pi-sitemap', path: '/compta/compte' },
-      { id: 'compta-journal', label: 'Journal', icon: 'pi pi-book', path: '/compta/journal' },
+      { id: 'compta-journal', label: 'Journal', icon: 'pi pi-folder', path: '/compta/journal' },
       { id: 'compta-ecriture', label: 'Saisie des écritures', icon: 'pi pi-file-edit', path: '/compta/ecritures' },
       { id: 'compta-grandlivre', label: 'Grand livre', icon: 'pi pi-book', path: '/compta/grandlivre' },
-      { id: 'compta-balance', label: 'Balance', icon: 'pi pi-book', path: '/compta/balance' },
+      { id: 'compta-balance', label: 'Balance', icon: 'pi pi-percentage', path: '/compta/balance' },
       { id: 'compta-bilan', label: 'Bilan', icon: 'pi pi-book', path: '/compta/bilan' },
-      { id: 'compta-resultat', label: 'Compte resultat', icon: 'pi pi-book', path: '/compta/resultat' }
+      { id: 'compta-resultat', label: 'Compte resultat', icon: 'pi pi-inbox', path: '/compta/resultat' }
       
     ],
   },
@@ -84,7 +84,7 @@ export const menuItems: MenuItem[] = [
   {
     id: 'administration',
     label: 'Administration',
-    icon: 'pi pi-cog',
+    icon: 'pi pi-sliders-h',
     children: [
       { id: 'admin-users', label: 'Utilisateurs', icon: 'pi pi-user', path: '/administration/users' },
       { id: 'admin-roles', label: 'Rôles & permissions', icon: 'pi pi-shield', path: '/administration/roles' },
