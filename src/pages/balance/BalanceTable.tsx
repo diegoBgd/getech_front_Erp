@@ -25,9 +25,9 @@ export const BalanceTable: React.FC<TableProps> = ({ lignes, typeCols, fmt }) =>
         <thead>
           <tr className="bg-navy-50/40 border-b border-navy-900 text-center font-bold [&_td]:p-2 [&_td]:border-r [&_td]:border-navy-900">
             <td colSpan={2} rowSpan={2} className="align-middle bg-navy-50/60">Structure Plan Comptable</td>
-            {typeCols === '6' && <td colSpan={2} className="bg-navy-50/20">1. Soldes Initiaux</td>}
-            <td colSpan={2} className="bg-navy-50/20">2. Mouvements Période</td>
-            <td colSpan={2} className="bg-navy-50/20">3. Soldes Finaux</td>
+            {typeCols === '6' && <td colSpan={2} className="bg-navy-50/20">Soldes Initiaux</td>}
+            <td colSpan={2} className="bg-navy-50/20">Mouvements Période</td>
+            <td colSpan={2} className="bg-navy-50/20">Soldes Finaux</td>
           </tr>
           <tr className="bg-white border-b border-navy-900 font-bold text-center [&_td]:p-2 [&_td]:border-r [&_td]:border-navy-900 last:[&_td]:border-r-0">
             {typeCols === '6' && <><td>Débit</td><td>Crédit</td></>}
@@ -49,7 +49,7 @@ export const BalanceTable: React.FC<TableProps> = ({ lignes, typeCols, fmt }) =>
                     : 'hover:bg-navy-50/10'
                 }`}
               >
-                <td className={`font-tabular font-bold w-[12%] ${isCollectif ? 'tracking-wide' : 'pl-6 text-navy-600'}`}>
+                <td className={`font-tabular font-bold w-[8%] ${isCollectif ? 'tracking-wide' : 'pl-6 text-navy-600'}`}>
                   {l.codeCompte}
                 </td>
                 <td className={`uppercase w-[34%] ${isCollectif ? 'font-black' : 'text-navy-700'}`}>

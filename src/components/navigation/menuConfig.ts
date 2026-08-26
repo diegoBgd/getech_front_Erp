@@ -38,6 +38,7 @@ export const menuItems: MenuItem[] = [
       { id: 'compta-plancomptable', label: 'Plan comptable', icon: 'pi pi-sitemap', path: '/compta/compte' },
       { id: 'compta-journal', label: 'Journal', icon: 'pi pi-folder', path: '/compta/journal' },
       { id: 'compta-ecriture', label: 'Saisie des écritures', icon: 'pi pi-file-edit', path: '/compta/ecritures' },
+      { id: 'compta-movementcompte', label: 'Mouvements du compte', icon: 'pi pi-list', path: '/compta/movementcompte' },
       { id: 'compta-grandlivre', label: 'Grand livre', icon: 'pi pi-book', path: '/compta/grandlivre' },
       { id: 'compta-balance', label: 'Balance', icon: 'pi pi-percentage', path: '/compta/balance' },
       { id: 'compta-bilan', label: 'Bilan', icon: 'pi pi-book', path: '/compta/bilan' },
