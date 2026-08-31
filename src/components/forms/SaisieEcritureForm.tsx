@@ -2,136 +2,137 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '../ui/input';
 import { Select } from '../ui/select';
 import { Button } from '../ui/button';
-import { Divider } from 'primereact/divider';
-import type { LigneEcritureSaisie, PieceComptableSaisie } from '@/types';
-
+import { useExerciceGlobal } from '../../contexts/ExerciceContext'; // 💡 IMPORT DU CONTEXTE
+import type { LigneEcritureDto } from '@/types';
 
 interface SaisieFormProps {
-  journaux: any[];
-  exercices: any[];
-  comptes: any[];
+  journaux: { label: string; value: string }[];
+  exercices: { label: string; value: number }[];
+  comptes: { label: string; value: string }[];
   loading: boolean;
-  onSubmit: (data: PieceComptableSaisie) => Promise<void>;
-  initialValues?: any; // 💡 Déclaré pour le compilateur
-  isReadOnly?: boolean; // 💡 Déclaré pour le compilateur
+  onSubmit: (data: any) => Promise<void>;
+  initialValues?: any;
+  isReadOnly?: boolean;
 }
 
-export const SaisieEcritureForm: React.FC<SaisieFormProps> = ({
-  journaux, exercices, comptes, loading, onSubmit, initialValues, isReadOnly = false
-}) => {
-  const [codeJournal, setCodeJournal] = useState<string>('');
-  const [idExercice, setIdExercice] = useState<number | null>(null);
-  const [reference, setReference] = useState<string>('');
-  const [datePiece, setDatePiece] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [lignes, setLignes] = useState<LigneEcritureSaisie[]>([
-    { codeCompte: '', libelle: '', debit: 0, credit: 0 },
-    { codeCompte: '', libelle: '', debit: 0, credit: 0 }
+interface LigneSaisieForm extends LigneEcritureDto { idUnique: string; }
+
+export const SaisieEcritureForm: React.FC<SaisieFormProps> = ({ journaux, comptes, loading, onSubmit, initialValues, isReadOnly = false }) => {
+  const [codeJournal, setCodeJournal] = useState('');
+  const [libelleGeneral, setLibelleGeneral] = useState('');
+  const [datePiece, setDatePiece] = useState(new Date().toISOString().split('T')[0]);
+  
+  // 💡 RECUPERATION EN DIRECT DE L'ID EXERCICE DE LA TOPBAR
+  const { exerciceId } = useExerciceGlobal();
+
+  const [lignes, setLignes] = useState<LigneSaisieForm[]>([
+    { idUnique: '1', codeCompte: '', libelleLigne: '', debit: 0, credit: 0 },
+    { idUnique: '2', codeCompte: '', libelleLigne: '', debit: 0, credit: 0 }
   ]);
 
   useEffect(() => {
     if (initialValues) {
-      setCodeJournal(initialValues.codeJournal);
-      setIdExercice(initialValues.idExercice);
-      setReference(initialValues.reference);
-      setDatePiece(initialValues.datePiece);
-      setLignes(initialValues.lignes);
-    } else {
-      setCodeJournal('');
-      setIdExercice(null);
-      setReference('');
-      setDatePiece(new Date().toISOString().split('T')[0]);
-      setLignes([
-        { codeCompte: '', libelle: '', debit: 0, credit: 0 },
-        { codeCompte: '', libelle: '', debit: 0, credit: 0 }
-      ]);
+      const jnl = journaux.find(j => j.value === initialValues.codeJournal || j.value === initialValues.journal?.code);
+      setCodeJournal(jnl ? jnl.value : (initialValues.codeJournal || ''));
+      setLibelleGeneral(initialValues.libelleGeneral || initialValues.reference || '');
+      if (initialValues.datePiece) setDatePiece(initialValues.datePiece);
+      if (initialValues.lignes) {
+        setLignes(initialValues.lignes.map((l: any, i: number) => ({
+          idUnique: `L-${i}-${Date.now()}`, 
+          codeCompte: l.codeCompte || l.compte?.code || '',
+          libelleLigne: l.libelle || l.libelleLigne || '', 
+          debit: Number(l.debit) || 0, 
+          credit: Number(l.credit) || 0
+        })));
+      }
     }
-  }, [initialValues]);
+  }, [initialValues, journaux]);
 
-  const handleLigneChange = (idx: number, field: keyof LigneEcritureSaisie, val: any) => {
+  const handleLigneChange = (idUnique: string, field: keyof LigneEcritureDto, val: any) => {
     if (isReadOnly) return;
-    const newLignes = [...lignes];
-    if (field === 'debit' || field === 'credit') {
-      const num = Math.abs(parseFloat(val) || 0);
-      newLignes[idx][field] = num;
-      if (num > 0) newLignes[idx][field === 'debit' ? 'credit' : 'debit'] = 0;
-    } else {
-      newLignes[idx][field] = val;
-    }
-    setLignes(newLignes);
-  };
-
-  const ajouterLigne = () => {
-    if (isReadOnly) return;
-    const lastLib = lignes[lignes.length - 1]?.libelle || reference || '';
-    setLignes([...lignes, { codeCompte: '', libelle: lastLib, debit: 0, credit: 0 }]);
-  };
-
-  const supprimerLigne = (idx: number) => {
-    if (isReadOnly) return;
-    if (lignes.length > 2) setLignes(lignes.filter((_, i) => i !== idx));
-  };
-
-  const totalDebit = lignes.reduce((sum, l) => sum + (Number(l.debit) || 0), 0);
-  const totalCredit = lignes.reduce((sum, l) => sum + (Number(l.credit) || 0), 0);
-  const ecart = Math.abs(totalDebit - totalCredit);
-  const estEquilibre = totalDebit >= 0 && ecart === 0;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!codeJournal || !idExercice || !estEquilibre || isReadOnly) return;
-    const lignesFormatees = lignes.map(l => ({
-      codeCompte: l.codeCompte,
-      libelle: l.libelle.trim() || 'Écriture',
-      debit: Number(l.debit) || 0,
-      credit: Number(l.credit) || 0
+    setLignes(prev => prev.map(l => {
+      if (l.idUnique !== idUnique) return l;
+      const r = { ...l };
+      if (field === 'debit' || field === 'credit') {
+        const num = Math.abs(parseFloat(val) || 0);
+        r[field] = num;
+        if (num > 0) r[field === 'debit' ? 'credit' : 'debit'] = 0;
+      } else if (field === 'codeCompte') {
+        r.codeCompte = String(val?.value || val?.code || val || '');
+      } else { (r as any)[field] = val; }
+      return r;
     }));
-    onSubmit({ codeJournal, idExercice: Number(idExercice), reference: reference.trim(), datePiece, lignes: lignesFormatees });
   };
+
+  const totalDebit = lignes.reduce((s, l) => s + (Number(l.debit) || 0), 0);
+  const totalCredit = lignes.reduce((s, l) => s + (Number(l.credit) || 0), 0);
+  const estEquilibre = totalDebit > 0 && Math.abs(totalDebit - totalCredit) < 0.01;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-navy-50/30 dark:bg-navy-950/20 rounded-lg">
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      // 💡 VALIDATION COMPTABLE : La soumission exige la présence de la variable globale exerciceId
+      if (codeJournal && exerciceId && estEquilibre && !isReadOnly) {
+        const lignesBackend = lignes.map(l => ({
+          id: l.id,
+          codeCompte: l.codeCompte,
+          libelle: l.libelleLigne.trim() || libelleGeneral.trim() || 'Écriture',
+          debit: Number(l.debit) || 0,
+          credit: Number(l.credit) || 0
+        }));
+
+        onSubmit({
+          id: initialValues?.id,
+          numeroPiece: initialValues?.numeroPiece || '',
+          datePiece,
+          reference: libelleGeneral.trim(),
+          codeJournal,
+          idExercice: Number(exerciceId), // 💡 INJECTION DIRECTE DU CONTEXTE GLOBAL DANS LE PAYLOAD
+          lignes: lignesBackend
+        });
+      }
+    }} className="space-y-4">
+      
+      {/* 📅 EN-TÊTE ÉPURÉ DE PIÈCE SUR TROIS COLONNES (L'EXERCICE COMPTABLE EST PORTÉ PAR LA TOPBAR) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-navy-50/40 rounded-xl border border-navy-100">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-navy-700">Journal *</label>
-          <Select value={codeJournal} options={journaux} filter onChange={(e) => setCodeJournal(e.value)} placeholder="Journal..." disabled={isReadOnly} required />
+          <label className="text-[11px] font-bold text-navy-400 uppercase">Journal *</label>
+          <Select value={codeJournal} options={journaux} filter onChange={e => setCodeJournal(e.value)} disabled={isReadOnly} required className="text-xs font-bold" />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-navy-700">Exercice *</label>
-          <Select value={idExercice} options={exercices} onChange={(e) => setIdExercice(e.value)} placeholder="Exercice..." disabled={isReadOnly} required />
+          <label className="text-[11px] font-bold text-navy-400 uppercase">Date d'opération *</label>
+          <Input type="date" value={datePiece} onChange={e => setDatePiece(e.target.value)} required className="text-xs font-bold h-[38px]" />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-navy-700">Date *</label>
-          <Input type="date" value={datePiece} onChange={(e) => setDatePiece(e.target.value)} disabled={isReadOnly} required />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-navy-700">Référence</label>
-          <Input type="text" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="Ex: FAC-001" disabled={isReadOnly} />
+          <label className="text-[11px] font-bold text-navy-400 uppercase">Libellé Général de la pièce</label>
+          <Input type="text" value={libelleGeneral} onChange={e => setLibelleGeneral(e.target.value)} placeholder="Désignation de l'opération..." className="text-xs font-bold" />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-navy-100 dark:border-navy-800">
-        <table className="w-full border-collapse text-xs bg-white text-left dark:bg-navy-950">
+      {/* BARRE PARTIE DOUBLE */}
+      <div className="flex justify-between items-center p-3 bg-white dark:bg-navy-900 border border-navy-200 rounded-xl text-xs font-bold font-mono">
+        <div className="flex gap-6">
+          <span className="text-emerald-700">DÉBIT : {new Intl.NumberFormat('fr-BI').format(totalDebit)}</span>
+          <span className="text-rose-700">CRÉDIT : {new Intl.NumberFormat('fr-BI').format(totalCredit)}</span>
+          <span className={`px-2 py-0.5 rounded ${estEquilibre ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>{estEquilibre ? '✓ ÉQUILIBRÉ' : '⚠️ ÉCART'}</span>
+        </div>
+        {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => setLignes([...lignes, { idUnique: `A-${Date.now()}`, codeCompte: '', libelleLigne: lignes[lignes.length - 1]?.libelleLigne || libelleGeneral, debit: 0, credit: 0 }])} className="text-xs uppercase h-8 font-bold">+ Ajouter une ligne</Button>}
+      </div>
+
+      {/* GRILLE DE IMPUTATIONS COMPACTE */}
+      <div className="w-full overflow-hidden border border-navy-200 bg-white rounded-xl shadow-xs">
+        <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="bg-navy-50/50 border-b border-navy-100 dark:bg-navy-900/40 [&_th]:p-3 [&_th]:font-semibold [&_th]:border-r [&_th]:border-navy-100 last:[&_th]:border-0">
-              <th style={{ width: '25%' }}>Compte</th>
-              <th style={{ width: '40%' }}>Libellé de ligne</th>
-              <th style={{ width: '13%' }} className="text-right">Débit</th>
-              <th style={{ width: '13%' }} className="text-right">Crédit</th>
-              <th style={{ width: '5%' }} className="text-center">Action</th>
-            </tr>
+            <tr className="bg-navy-50 font-bold border-b border-navy-200 [&_th]:p-2 text-navy-800 uppercase text-[11px]"><th className="w-[320px] pl-4">Compte Général</th><th>Libellé de l'écriture</th><th className="w-[140px]">Débit</th><th className="w-[140px]">Crédit</th>{!isReadOnly && <th className="w-[50px] text-center">X</th>}</tr>
           </thead>
-          <tbody className="divide-y divide-navy-50 dark:divide-navy-800/40 [&_td]:p-2 [&_td]:border-r [&_td]:border-navy-100 dark:[&_td]:border-navy-800/60 last:[&_td]:border-r-0">
-            {lignes.map((ligne, idx) => (
-              <tr key={idx}>
-                <td><Select value={ligne.codeCompte} options={comptes} onChange={(e) => handleLigneChange(idx, 'codeCompte', e.value)} placeholder="Compte..." disabled={isReadOnly} filter /></td>
-                <td><Input type="text" value={ligne.libelle} onChange={(e) => handleLigneChange(idx, 'libelle', e.target.value)} placeholder="Libellé..." disabled={isReadOnly} required /></td>
-                <td><Input type="number" value={ligne.debit === 0 ? "" : ligne.debit} onChange={(e) => handleLigneChange(idx, 'debit', e.target.value)} className="text-right" placeholder="0" disabled={isReadOnly} min="0" step="0.01" /></td>
-                <td><Input type="number" value={ligne.credit === 0 ? "" : ligne.credit} onChange={(e) => handleLigneChange(idx, 'credit', e.target.value)} className="text-right" placeholder="0" disabled={isReadOnly} min="0" step="0.01" /></td>
-                <td className="text-center">
-                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 text-red-accent-500 rounded-full" onClick={() => supprimerLigne(idx)} disabled={lignes.length <= 2 || isReadOnly}>
-                    <i className="pi pi-times text-xs"></i>
-                  </Button>
-                </td>
+          <tbody className="divide-y divide-navy-100">
+            {lignes.map((l) => (
+              <tr key={l.idUnique} className="[&_td]:p-2 hover:bg-navy-50/10">
+                <td className="pl-4"><Select value={l.codeCompte || ''} options={comptes} filter onChange={e => handleLigneChange(l.idUnique, 'codeCompte', e.value)} disabled={isReadOnly} className="w-full text-xs font-mono font-bold" /></td>
+                <td><Input type="text" value={l.libelleLigne || ''} onChange={e => handleLigneChange(l.idUnique, 'libelleLigne', e.target.value)} placeholder="Opération..." className="w-full text-xs font-bold uppercase" /></td>
+                <td><Input type="number" value={l.debit === 0 ? '' : l.debit} onChange={e => handleLigneChange(l.idUnique, 'debit', e.target.value)} placeholder="0" className="w-full text-right font-mono text-emerald-700 font-bold" /></td>
+                <td><Input type="number" value={l.credit === 0 ? '' : l.credit} onChange={e => handleLigneChange(l.idUnique, 'credit', e.target.value)} placeholder="0" className="w-full text-right font-mono text-rose-700 font-bold" /></td>
+                {!isReadOnly && <td className="text-center"><Button type="button" variant="ghost" disabled={lignes.length <= 2} onClick={() => setLignes(lignes.filter(x => x.idUnique !== l.idUnique))} className="text-rose-600 p-1 h-7 w-7"><i className="pi pi-trash text-xs" /></Button></td>}
               </tr>
             ))}
           </tbody>
@@ -139,49 +140,9 @@ export const SaisieEcritureForm: React.FC<SaisieFormProps> = ({
       </div>
 
       {!isReadOnly && (
-        <div className="flex">
-          <Button type="button" variant="outline" size="sm" onClick={ajouterLigne}>
-            <i className="pi pi-plus text-xs mr-1"></i> Ajouter une ligne
-          </Button>
-        </div>
-      )}
-
-     
-      {/* SECTION 3 : INDICATEUR D'ÉQUILIBRE FINANCIER REVISITÉ AVEC SÉPARATEUR DE MILLIERS */}
-      <div className={`grid grid-cols-1 md:grid-cols-3 p-4 rounded-lg border font-semibold bg-white dark:bg-navy-950 shadow-xs ${
-        estEquilibre 
-          ? 'text-emerald-700 border-emerald-200 bg-emerald-50/10' 
-          : 'text-red-accent-500 border-red-200 bg-red-50/10'
-      }`}>
-        <div className="flex flex-col">
-          <span className="text-xs font-normal text-navy-400 dark:text-navy-500">Total Débit</span>
-          {/* 💡 Utilisation du séparateur de milliers et police à espacement fixe */}
-          <span className="font-tabular text-sm font-bold tracking-wide mt-0.5">
-            {new Intl.NumberFormat('fr-BI', { style: 'currency', currency: 'BIF', maximumFractionDigits: 0 }).format(totalDebit)}
-          </span>
-        </div>
-        <div className="flex flex-col">
-          <span className="text-xs font-normal text-navy-400 dark:text-navy-500">Total Crédit</span>
-          {/* 💡 Utilisation du séparateur de milliers et police à espacement fixe */}
-          <span className="font-tabular text-sm font-bold tracking-wide mt-0.5">
-            {new Intl.NumberFormat('fr-BI', { style: 'currency', currency: 'BIF', maximumFractionDigits: 0 }).format(totalCredit)}
-          </span>
-        </div>
-        <div className="flex items-center md:justify-end">
-          <span className={`px-2.5 py-1 text-xs uppercase rounded-md border font-bold ${
-            estEquilibre ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-accent-500 border-red-200'
-          }`}>
-            {estEquilibre ? '✓ Pièce Équilibrée' : '⚠️ Pièce Déséquilibrée'}
-          </span>
-        </div>
-      </div>
-
-
-      {!isReadOnly && (
-        <div className="flex justify-end mt-2">
-          <Button type="submit" variant="default" size="sm" disabled={loading || !estEquilibre || !codeJournal || !idExercice}>
-            {loading ? 'Validation...' : 'Enregistrer la Pièce'}
- 
+        <div className="flex justify-end pt-2">
+          <Button type="submit" disabled={loading || !estEquilibre} className="font-bold uppercase text-xs px-6 h-[38px]">
+            Enregistrer la Pièce Comptable
           </Button>
         </div>
       )}

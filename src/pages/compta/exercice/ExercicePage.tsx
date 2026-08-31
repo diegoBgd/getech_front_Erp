@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Divider } from 'primereact/divider';
-import { Button } from '../../components/ui/button';
+import { Button } from '../../../components/ui/button';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { ModalConfirm } from '../../components/ui/modal-confirm';
+import { ModalConfirm } from '../../../components/ui/modal-confirm';
 
 import { ExerciceTable } from './ExerciceTable';
 import type { Exercice } from '@/types/exercice.types';
@@ -71,7 +71,7 @@ export const ExercicePage: React.FC = () => {
           <div>
             <h2 className="text-base font-bold text-navy-900 dark:text-navy-50">Périodes & Exercices Comptables</h2>
           </div>
-          <Button size="sm" onClick={() => { setCurrentExercice(null); setShowForm(true); }} className="font-bold uppercase text-xs h-[36px] px-4">
+          <Button size="sm" onClick={() => { setCurrentExercice(null); setShowForm(true); }} className="font-bold  text-xs h-[36px] px-4">
             <i className="pi pi-plus mr-2 text-xs"></i> Nouvel Exercice
           </Button>
         </div>

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Divider } from 'primereact/divider';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { Input } from '../../components/ui/input';
-import { Select } from '../../components/ui/select';
-import { Button } from '../../components/ui/button';
+import { Input } from '../../../components/ui/input';
+import { Select } from '../../../components/ui/select';
+import { Button } from '../../../components/ui/button';
 import type { Exercice } from '@/types/exercice.types';
 import { historiqueService, type LigneHistoriqueCompteDto } from '@/services/historique.service';
 import { exerciceService } from '@/services/exercice.service';

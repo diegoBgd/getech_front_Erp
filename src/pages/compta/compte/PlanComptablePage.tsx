@@ -152,7 +152,7 @@ export const PlanComptablePage: React.FC = () => {
             </p>
           </div>
           <Button variant="default" size="sm" onClick={handleOpenCreate}>
-            <i className="pi pi-plus text-xs mr-1.5"></i> Ajouter un compte
+            <i className="pi pi-plus text-xs mr-1.5"></i> Nouveau compte
           </Button>
         </div>
 

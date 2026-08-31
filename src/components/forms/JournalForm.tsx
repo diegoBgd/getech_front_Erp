@@ -74,10 +74,12 @@ export const JournalForm: React.FC<JournalFormProps> = ({ onSubmit, onCancel, lo
 
       <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-navy-100 dark:border-navy-800">
         <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={loading}>
+         <i className="pi pi-undo mr-2 text-xs"></i>
           Annuler
         </Button>
         <Button type="submit" variant="default" size="sm" disabled={loading}>
-          {loading ? 'Chargement...' : initialValues ? 'Modifier' : 'Ajouter'}
+          <i className="pi pi-save mr-2 text-xs"></i>
+          {loading ? 'Chargement...' : initialValues ? 'Modifier' : 'Enregistrer'}
         </Button>
       </div>
     </form>

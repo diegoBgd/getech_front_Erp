@@ -3,21 +3,23 @@ import { PrimeReactProvider } from 'primereact/api';
 import { SidebarProvider } from '@/contexts/SidebarContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ExerciceProvider } from '@/contexts/ExerciceContext'; // 💡 AJOUT DE L'IMPORTATION
 import { router } from '@/routes/AppRouter';
 
 /**
  * Racine de l'application : assemble tous les Providers (PrimeReact, Thème,
- * Sidebar, Auth) puis délègue le rendu des pages à React Router.
+ * Sidebar, Auth, Exercice) puis délègue le rendu des pages à React Router.
  */
-
 function App() {
- 
   return (
     <PrimeReactProvider>
       <ThemeProvider>
         <AuthProvider>
           <SidebarProvider>
-            <RouterProvider router={router} />
+            {/* 💡 INTÉGRATION DE L'EXERCICE PROVIDER GLOBAL */}
+            <ExerciceProvider>
+              <RouterProvider router={router} />
+            </ExerciceProvider>
           </SidebarProvider>
         </AuthProvider>
       </ThemeProvider>

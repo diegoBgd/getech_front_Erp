@@ -5,6 +5,7 @@ import React from 'react';
 interface ActifTableProps {
     lignes: LigneActifDto[];
     formatMontant: (valeur: number) => string;
+    formatDate: (dateStr: string) => string;
 }
 
 export const BilanActifTable: React.FC<ActifTableProps> = ({ lignes, formatMontant }) => {

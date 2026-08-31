@@ -118,35 +118,35 @@ export const ExerciceForm: React.FC<ExerciceFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-[11px] font-bold uppercase text-navy-400 dark:text-navy-500 mb-1">Code de l'exercice</label>
+            <label className="block text-[11px] font-bold  text-navy-400 dark:text-navy-500 mb-1">Code de l'exercice</label>
             <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="ex: 2026" required className="text-xs font-bold" />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase text-navy-400 dark:text-navy-500 mb-1">Intitulé / Libellé</label>
+            <label className="block text-[11px] font-bold  text-navy-400 dark:text-navy-500 mb-1">Intitulé / Libellé</label>
             <Input value={libelle} onChange={(e) => setLibelle(e.target.value)} placeholder="ex: Exercice Comptable 2026" required className="text-xs font-bold" />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-[11px] font-bold uppercase text-navy-400 dark:text-navy-500 mb-1">Date de début</label>
+            <label className="block text-[11px] font-bold  text-navy-400 dark:text-navy-500 mb-1">Date de début</label>
             <Input type="date" value={dateDebut} onChange={(e) => setDateDebut(e.target.value)} required className="text-xs font-bold" />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase text-navy-400 dark:text-navy-500 mb-1">Date de fin</label>
+            <label className="block text-[11px] font-bold  text-navy-400 dark:text-navy-500 mb-1">Date de fin</label>
             <Input type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} required className="text-xs font-bold" />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-[11px] font-bold uppercase text-navy-400 dark:text-navy-500 mb-1">Statut Courant</label>
+            <label className="block text-[11px] font-bold  text-navy-400 dark:text-navy-500 mb-1">Statut </label>
             <Select value={statut} options={optionsStatut} onChange={(e: any) => setStatut(e.value)} className="text-xs font-bold" />
           </div>
           
           {/* 💡 CORRECTION : Remplacement du Dropdown par votre Select UI ERP standardisé */}
           <div>
-            <label className="block text-[11px] font-bold uppercase text-navy-400 dark:text-navy-500 mb-1">Exercice Précédent (N-1)</label>
+            <label className="block text-[11px] font-bold  text-navy-400 dark:text-navy-500 mb-1">Exercice Précédent (N-1)</label>
             <Select 
               value={exercicePrecedentId} 
               options={optionsPrecedent} 
@@ -157,11 +157,13 @@ export const ExerciceForm: React.FC<ExerciceFormProps> = ({
         </div>
 
         <div className="flex justify-end gap-2 pt-4 border-t border-navy-50 dark:border-navy-800">
-          <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={loading} className="text-xs font-bold uppercase">
+          <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={loading} className="text-xs font-bold ">
+           <i className="pi pi-undo mr-2 text-xs"></i>
             Annuler
           </Button>
-          <Button type="submit" size="sm" disabled={loading} className="text-xs font-bold uppercase px-4">
-            {loading ? "Enregistrement..." : "Sauvegarder"}
+          <Button type="submit" size="sm" disabled={loading} className="text-xs font-bold  px-4">        
+           <i className="pi pi-save mr-2 text-xs"></i>
+            {loading ? "Enregistrer" : "Enregistrer"}
           </Button>
         </div>
       </form>

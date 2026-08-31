@@ -1,4 +1,5 @@
-import type { PieceComptableSaisie } from '@/types';
+
+import type { EcritureComptableDto } from '@/types';
 import axios from 'axios';
 
 
@@ -6,7 +7,7 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/erp/comp
 
 export const ecritureService = {
   // Enregistrer une pièce comptable complète (En-tête + Lignes)
-  enregistrerPiece: async (data: PieceComptableSaisie): Promise<any> => {
+  enregistrerPiece: async (data: EcritureComptableDto): Promise<any> => {
    
     const response = await axios.post(`${API_BASE}/saisie`, data);
     return response.data;
@@ -41,13 +42,23 @@ export const ecritureService = {
     const response = await axios.get(`${API_BASE}/saisie/${id}`);
     return response.data;
   },
-  updatePiece: async (id: number, data: PieceComptableSaisie): Promise<any> => {
+  updatePiece: async (id: number, data: EcritureComptableDto): Promise<any> => {
     const response = await axios.put(`${API_BASE}/update/${id}`, data);
     return response.data;
   },
 
   deletePiece: async (id: number): Promise<void> => {
     await axios.delete(`${API_BASE}/delete/${id}`);
-  }
-
+  },
+rechercherPieces: async (
+    exerciceId: number,
+    codeJournal?: string,
+    dateDebut?: string,
+    dateFin?: string
+  ): Promise<EcritureComptableDto[]> => {
+    const response = await axios.get<EcritureComptableDto[]>(`${API_BASE}/recherche/${exerciceId}`, {
+      params: { codeJournal, dateDebut, dateFin }
+    });
+    return response.data;
+  },
 };

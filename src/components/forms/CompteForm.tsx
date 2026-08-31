@@ -94,6 +94,7 @@ export const CompteForm: React.FC<CompteFormProps> = ({ onSubmit, onCancel, load
           onClick={onCancel} 
           disabled={loading}
         >
+          <i className="pi pi-undo mr-2 text-xs"></i>
           Annuler
         </Button>
         <Button 
@@ -101,9 +102,9 @@ export const CompteForm: React.FC<CompteFormProps> = ({ onSubmit, onCancel, load
           variant="default" // Utilise le style sombre bg-navy-700 de votre UI
           size="sm"
           disabled={loading}
-         
         >
-          {loading ? 'Chargement...' : initialValues ? 'Modifier' : 'Ajouter'}
+          <i className="pi pi-save mr-2 text-xs"></i>
+          {loading ? 'Chargement...' : initialValues ? 'Modifier' : 'Enregistrer'}
         </Button>
       </div>
     </form>

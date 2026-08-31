@@ -201,11 +201,11 @@ export const RubriqueForm: React.FC<FormProps> = ({ typeEtat, onSuccess }) => {
 
       {/* ACTION BLOCK */}
       <div className="flex justify-end border-t border-navy-100 dark:border-navy-800 pt-3">
-        <Button type="submit" disabled={loading} variant="default" size="sm" className="w-[150px] font-bold  text-xs tracking-wider h-[38px] shadow-xs">
+        <Button type="submit" disabled={loading} variant="default"  size="sm">
           {loading ? (
             <>
               <i className="pi pi-spin pi-spinner mr-2 text-xs"></i>
-              Enregistrement encours...
+              Enregistrer
             </>
           ) : (
             <>

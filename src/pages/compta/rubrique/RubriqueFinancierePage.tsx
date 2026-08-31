@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Divider } from 'primereact/divider';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
-import { RubriqueForm } from '../../components/forms/RubriqueForm';
+import { RubriqueForm } from '../../../components/forms/RubriqueForm';
 
-import { Select } from '../../components/ui/select';
-import { ModalConfirm } from '../../components/ui/modal-confirm';
+import { Select } from '../../../components/ui/select';
+import { ModalConfirm } from '../../../components/ui/modal-confirm';
 import { rubriqueService, type RubriqueFinanciere } from '@/services/rubrique.service';
 import { RubriqueTable } from './RubriqueTable';
 
