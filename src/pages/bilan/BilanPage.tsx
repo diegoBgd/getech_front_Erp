@@ -2,23 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { Divider } from 'primereact/divider';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Input } from '../../components/ui/input';
-import { Select } from '../../components/ui/select';
 import { Button } from '../../components/ui/button';
-import type { Exercice } from '@/types/exercice.types';
 import { bilanService, type BilanCompletResponseDto } from '@/services/bilan.service';
-import { exerciceService } from '@/services/exercice.service';
 import { BilanActifTable } from './BilanActifTable';
 import { BilanPassifTable } from './BilanPassifTable';
+import { useExerciceGlobal } from '@/contexts/ExerciceContext'; // 💡 IMPORT DU CONTEXTE GLOBAL
 
 export const BilanPage: React.FC = () => {
-  // --- ÉTATS CRITIQUES ---
-  const [exercices, setExercices] = useState<Exercice[]>([]);
-  const [exerciceSelectionne, setExerciceSelectionne] = useState<number | null>(null);
   const [dateFin, setDateFin] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [donnees, setDonnees] = useState<BilanCompletResponseDto | null>(null);
 
-  // --- UTILS DE FORMATAGE ---
+  // 💡 LIAISON COMPTABLE COMMUNE : Récupère la période active de la TopBar
+  const { exerciceId, exercicesOptions } = useExerciceGlobal();
+
   const formatDate = (dateStr: string): string => {
     if (!dateStr) return '-';
     const parties = dateStr.split('-');
@@ -28,34 +25,14 @@ export const BilanPage: React.FC = () => {
 
   const formatMontant = (valeur: number) => {
     if (valeur === 0 || !valeur) return '-';
-    return new Intl.NumberFormat('fr-FR', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(valeur);
+    return new Intl.NumberFormat('fr-BI', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(valeur);
   };
 
-  // --- CHARGEMENT DU RÉFÉRENTIEL ---
-  const chargerExercices = async () => {
-    try {
-      const liste = await exerciceService.getAll();
-      setExercices(liste);
-      
-      if (liste && liste.length > 0) {
-        const premier = liste[0];
-        setExerciceSelectionne(premier.id);
-        setDateFin(premier.dateFin);
-      }
-    } catch (err) {
-      console.error("Erreur d'extraction des exercices", err);
-    }
-  };
-
-  // --- CALCUL DU BILAN ---
   const executerCalculBilan = async () => {
-    if (!exerciceSelectionne || !dateFin) return;
+    if (!exerciceId || !dateFin) return;
     setLoading(true);
     try {
-      const data = await bilanService.extraireBilan(exerciceSelectionne, dateFin);
+      const data = await bilanService.extraireBilan(Number(exerciceId), dateFin);
       setDonnees(data);
     } catch (err) {
       console.error("Erreur de calcul du bilan récursif", err);
@@ -65,69 +42,42 @@ export const BilanPage: React.FC = () => {
     }
   };
 
-  // Chargement des listes au montage du composant
+  // 💡 EFFET DE RECONSTITUTION DE LA DATE DE FIN SELON L'EXERCICE GLOBAL SÉLECTIONNÉ
   useEffect(() => {
-    chargerExercices();
-  }, []);
-
-  // Déclenchement automatique si l'utilisateur change d'exercice dans la liste déroulante
-  useEffect(() => {
-    if (exerciceSelectionne) {
-      const exInfo = exercices.find(e => e.id === exerciceSelectionne);
-      if (exInfo) {
-        setDateFin(exInfo.dateFin);
+    if (exerciceId && exercicesOptions.length > 0) {
+      const exCourant = exercicesOptions.find(e => e.value === exerciceId);
+      if (exCourant) {
+        // Extrait le code de l'exercice ou cale la date par défaut (ex: 31 décembre de l'année)
+        const matchAnnee = exCourant.label.match(/\d{4}/);
+        const annee = matchAnnee ? matchAnnee[0] : new Date().getFullYear().toString();
+        setDateFin(`${annee}-12-31`);
       }
+    }
+  }, [exerciceId, exercicesOptions]);
+
+  // 💡 RELANCE COMPTABLE COMMUNE : Recalcule automatiquement dès que la période change ou que la date butoir est ajustée
+  useEffect(() => {
+    if (exerciceId && dateFin) {
       executerCalculBilan();
     }
-  }, [exerciceSelectionne]);
-
-  // Transformation pour le composant Select ERP
-  const optionsExercices = exercices.map(ex => ({
-    label: `${ex.libelle} [${ex.code}]`,
-    value: ex.id
-  }));
+  }, [exerciceId, dateFin]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto animate-fade-in">
       <div className="bg-white dark:bg-navy-900 rounded-xl border border-navy-100 dark:border-navy-800 p-6 flex flex-col shadow-sm">
         
-        {/* EN-TÊTE DE PAGE */}
+        {/* EN-TÊTE DE PAGE AVEC FILTRES COMPACTÉS */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2 className="text-base font-bold text-navy-900 dark:text-navy-50">
-              Bilan Comptable Réglementaire
-            </h2>
-            <p className="text-xs text-navy-400 dark:text-navy-500">
-              Période arrêtée au : {dateFin ? formatDate(dateFin) : '-'}
-            </p>
+            <h2 className="text-base font-bold text-navy-900 dark:text-navy-50">Bilan Comptable Réglementaire</h2>
+            <p className="text-xs text-navy-400 dark:text-navy-500">Période arrêtée au : {dateFin ? formatDate(dateFin) : '-'}</p>
           </div>
 
-          {/* FILTRES DE COMMANDE */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="w-[240px]">
-              <Select 
-                value={exerciceSelectionne} 
-                options={optionsExercices} 
-                onChange={(e: any) => setExerciceSelectionne(e.value)}
-                placeholder="Sélectionner l'exercice"
-                className="text-xs font-bold"
-              />
+            <div className="w-[160px]">
+              <Input type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} className="text-xs font-bold h-[38px]" />
             </div>
-            <div className="w-[150px]">
-              <Input 
-                type="date" 
-                value={dateFin} 
-                onChange={(e) => setDateFin(e.target.value)}
-                className="text-xs font-bold h-[38px]"
-              />
-            </div>
-            <Button 
-              variant="default" 
-              size="sm" 
-              onClick={executerCalculBilan} 
-              disabled={loading || !exerciceSelectionne}
-              className="font-bold uppercase text-xs h-[38px] px-4"
-            >
+            <Button variant="default" size="sm" onClick={executerCalculBilan} disabled={loading || !exerciceId} className="font-bold uppercase text-xs h-[38px] px-4">
               <i className="pi pi-refresh mr-2 text-xs"></i> Calculer
             </Button>
           </div>
@@ -135,7 +85,6 @@ export const BilanPage: React.FC = () => {
 
         <Divider className="my-4 border-navy-100 dark:border-navy-800" />
 
-        {/* INDICATEUR DE TRAITEMENT ASYNCHRONE */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-6 gap-2 bg-navy-50/10 dark:bg-navy-900/10 rounded-xl mb-4">
             <ProgressSpinner style={{ width: '28px' }} />
@@ -143,19 +92,10 @@ export const BilanPage: React.FC = () => {
           </div>
         )}
 
-        {/* 💡 SÉCURISATION FIXE : Les structures des tables s'affichent TOUJOURS.
-            Si 'donnees' est vide, on envoie un tableau à plat pour forcer le rendu visuel. */}
+        {/* AFFICHAGE DES DEUX MASSES PATRIMONIALES (ACTIF / PASSIF) */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-          <BilanActifTable 
-            lignes={donnees?.actif || []} 
-            formatMontant={formatMontant} 
-            formatDate={formatDate} 
-          />
-          <BilanPassifTable 
-            lignes={donnees?.passif || []} 
-            formatMontant={formatMontant} 
-            formatDate={formatDate} 
-          />
+          <BilanActifTable lignes={donnees?.actif || []} formatMontant={formatMontant} formatDate={formatDate} />
+          <BilanPassifTable lignes={donnees?.passif || []} formatMontant={formatMontant} formatDate={formatDate} />
         </div>
 
       </div>

@@ -8,6 +8,10 @@ export const exerciceService = {
     const res = await axios.get<Exercice[]>(API_URL);
     return res.data;
   },
+  getOuvert: async (): Promise<Exercice[]> => {
+    const res = await axios.get<Exercice[]>(`${API_URL}/ouvert`);
+    return res.data;
+  },
   create: async (data: ExerciceFormValues): Promise<Exercice> => {
     const res = await axios.post<Exercice>(API_URL, data);
     return res.data;

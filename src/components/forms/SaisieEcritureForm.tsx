@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '../ui/input';
 import { Select } from '../ui/select';
 import { Button } from '../ui/button';
-import { useExerciceGlobal } from '../../contexts/ExerciceContext'; // 💡 IMPORT DU CONTEXTE
+import { useExerciceGlobal } from '../../contexts/ExerciceContext';
 import type { LigneEcritureDto } from '@/types';
 
 interface SaisieFormProps {
   journaux: { label: string; value: string }[];
-  exercices: { label: string; value: number }[];
   comptes: { label: string; value: string }[];
   loading: boolean;
   onSubmit: (data: any) => Promise<void>;
@@ -22,7 +21,7 @@ export const SaisieEcritureForm: React.FC<SaisieFormProps> = ({ journaux, compte
   const [libelleGeneral, setLibelleGeneral] = useState('');
   const [datePiece, setDatePiece] = useState(new Date().toISOString().split('T')[0]);
   
-  // 💡 RECUPERATION EN DIRECT DE L'ID EXERCICE DE LA TOPBAR
+  // 💡 INJECTION DIRECTE DE L'EXERCICE DE LA TOPBAR
   const { exerciceId } = useExerciceGlobal();
 
   const [lignes, setLignes] = useState<LigneSaisieForm[]>([
@@ -32,21 +31,26 @@ export const SaisieEcritureForm: React.FC<SaisieFormProps> = ({ journaux, compte
 
   useEffect(() => {
     if (initialValues) {
-      const jnl = journaux.find(j => j.value === initialValues.codeJournal || j.value === initialValues.journal?.code);
-      setCodeJournal(jnl ? jnl.value : (initialValues.codeJournal || ''));
+      setCodeJournal(initialValues.codeJournal || '');
       setLibelleGeneral(initialValues.libelleGeneral || initialValues.reference || '');
       if (initialValues.datePiece) setDatePiece(initialValues.datePiece);
-      if (initialValues.lignes) {
+      if (initialValues.lignes && Array.isArray(initialValues.lignes)) {
         setLignes(initialValues.lignes.map((l: any, i: number) => ({
-          idUnique: `L-${i}-${Date.now()}`, 
-          codeCompte: l.codeCompte || l.compte?.code || '',
-          libelleLigne: l.libelle || l.libelleLigne || '', 
-          debit: Number(l.debit) || 0, 
+          idUnique: `L-${i}-${Date.now()}`,
+          codeCompte: l.codeCompte || '',
+          libelleLigne: l.libelleLigne || '',
+          debit: Number(l.debit) || 0,
           credit: Number(l.credit) || 0
         })));
       }
+    } else {
+      setCodeJournal(''); setLibelleGeneral(''); setDatePiece(new Date().toISOString().split('T')[0]);
+      setLignes([
+        { idUnique: '1', codeCompte: '', libelleLigne: '', debit: 0, credit: 0 },
+        { idUnique: '2', codeCompte: '', libelleLigne: '', debit: 0, credit: 0 }
+      ]);
     }
-  }, [initialValues, journaux]);
+  }, [initialValues]);
 
   const handleLigneChange = (idUnique: string, field: keyof LigneEcritureDto, val: any) => {
     if (isReadOnly) return;
@@ -58,7 +62,7 @@ export const SaisieEcritureForm: React.FC<SaisieFormProps> = ({ journaux, compte
         r[field] = num;
         if (num > 0) r[field === 'debit' ? 'credit' : 'debit'] = 0;
       } else if (field === 'codeCompte') {
-        r.codeCompte = String(val?.value || val?.code || val || '');
+        r.codeCompte = String(val?.value || val || '');
       } else { (r as any)[field] = val; }
       return r;
     }));
@@ -71,55 +75,39 @@ export const SaisieEcritureForm: React.FC<SaisieFormProps> = ({ journaux, compte
   return (
     <form onSubmit={(e) => {
       e.preventDefault();
-      // 💡 VALIDATION COMPTABLE : La soumission exige la présence de la variable globale exerciceId
       if (codeJournal && exerciceId && estEquilibre && !isReadOnly) {
-        const lignesBackend = lignes.map(l => ({
-          id: l.id,
-          codeCompte: l.codeCompte,
-          libelle: l.libelleLigne.trim() || libelleGeneral.trim() || 'Écriture',
-          debit: Number(l.debit) || 0,
-          credit: Number(l.credit) || 0
-        }));
-
+        // 💡 PAYLOAD ENTIÈREMENT SÉCURISÉ AVEC IDEXERCICE DYNAMIQUE
         onSubmit({
           id: initialValues?.id,
           numeroPiece: initialValues?.numeroPiece || '',
-          datePiece,
-          reference: libelleGeneral.trim(),
           codeJournal,
-          idExercice: Number(exerciceId), // 💡 INJECTION DIRECTE DU CONTEXTE GLOBAL DANS LE PAYLOAD
-          lignes: lignesBackend
+          idExercice: Number(exerciceId),
+          reference: libelleGeneral.trim(),
+          datePiece,
+          lignes: lignes.map(({ idUnique, ...pureLigne }) => ({
+            ...pureLigne,
+            libelleLigne: pureLigne.libelleLigne.trim() || libelleGeneral.trim() || 'Écriture'
+          }))
         });
       }
     }} className="space-y-4">
       
-      {/* 📅 EN-TÊTE ÉPURÉ DE PIÈCE SUR TROIS COLONNES (L'EXERCICE COMPTABLE EST PORTÉ PAR LA TOPBAR) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-navy-50/40 rounded-xl border border-navy-100">
-        <div className="flex flex-col gap-1">
-          <label className="text-[11px] font-bold text-navy-400 uppercase">Journal *</label>
-          <Select value={codeJournal} options={journaux} filter onChange={e => setCodeJournal(e.value)} disabled={isReadOnly} required className="text-xs font-bold" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-[11px] font-bold text-navy-400 uppercase">Date d'opération *</label>
-          <Input type="date" value={datePiece} onChange={e => setDatePiece(e.target.value)} required className="text-xs font-bold h-[38px]" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-[11px] font-bold text-navy-400 uppercase">Libellé Général de la pièce</label>
-          <Input type="text" value={libelleGeneral} onChange={e => setLibelleGeneral(e.target.value)} placeholder="Désignation de l'opération..." className="text-xs font-bold" />
-        </div>
+      {/* 📅 EN-TÊTE ÉPURÉ DE PIÈCE ADAPTÉ ET PROPRE */}
+      <div className="grid grid-cols-1 md:grid-cols-[45%_20%_30%] gap-4 p-4 bg-navy-50/40 rounded-xl border border-navy-100">
+        <div className="flex flex-col gap-1"><label className="text-[11px] font-bold text-navy-400">Journal *</label><Select value={codeJournal} options={journaux} filter onChange={e => setCodeJournal(e.value)} disabled={isReadOnly} required className="text-xs font-bold" /></div>
+        <div className="flex flex-col gap-1"><label className="text-[11px] font-bold text-navy-400">Date *</label><Input type="date" value={datePiece} onChange={e => setDatePiece(e.target.value)} required className="text-xs font-bold" /></div>
+        <div className="flex flex-col gap-1"><label className="text-[11px] font-bold text-navy-400">Libellé / Référence Général</label><Input type="text" value={libelleGeneral} onChange={e => setLibelleGeneral(e.target.value)} placeholder="Désignation de l'opération..." className="text-xs font-bold" /></div>
       </div>
 
-      {/* BARRE PARTIE DOUBLE */}
       <div className="flex justify-between items-center p-3 bg-white dark:bg-navy-900 border border-navy-200 rounded-xl text-xs font-bold font-mono">
         <div className="flex gap-6">
           <span className="text-emerald-700">DÉBIT : {new Intl.NumberFormat('fr-BI').format(totalDebit)}</span>
           <span className="text-rose-700">CRÉDIT : {new Intl.NumberFormat('fr-BI').format(totalCredit)}</span>
           <span className={`px-2 py-0.5 rounded ${estEquilibre ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>{estEquilibre ? '✓ ÉQUILIBRÉ' : '⚠️ ÉCART'}</span>
         </div>
-        {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => setLignes([...lignes, { idUnique: `A-${Date.now()}`, codeCompte: '', libelleLigne: lignes[lignes.length - 1]?.libelleLigne || libelleGeneral, debit: 0, credit: 0 }])} className="text-xs uppercase h-8 font-bold">+ Ajouter une ligne</Button>}
+        {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => setLignes([...lignes, { idUnique: `A-${Date.now()}`, codeCompte: '', libelleLigne: lignes[lignes.length - 1]?.libelleLigne || libelleGeneral, debit: 0, credit: 0 }])} className="text-xs  h-8 font-bold">+ Ajouter une ligne</Button>}
       </div>
 
-      {/* GRILLE DE IMPUTATIONS COMPACTE */}
       <div className="w-full overflow-hidden border border-navy-200 bg-white rounded-xl shadow-xs">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
@@ -139,13 +127,16 @@ export const SaisieEcritureForm: React.FC<SaisieFormProps> = ({ journaux, compte
         </table>
       </div>
 
-      {!isReadOnly && (
-        <div className="flex justify-end pt-2">
-          <Button type="submit" disabled={loading || !estEquilibre} className="font-bold uppercase text-xs px-6 h-[38px]">
-            Enregistrer la Pièce Comptable
-          </Button>
-        </div>
-      )}
+      {!isReadOnly && <div className="flex justify-end pt-2">
+        <Button type="submit" disabled={loading || !estEquilibre || !exerciceId} 
+        className="font-bold  text-xs px-6 h-[30px]">
+          {loading ?
+          <i className="pi pi-spinner mr-2 text-xs"></i>
+          :
+           <i className="pi pi-save mr-2 text-xs"></i>
+          }
+          Enregistrer 
+        </Button></div>}
     </form>
   );
 };

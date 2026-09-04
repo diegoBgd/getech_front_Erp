@@ -4,15 +4,12 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import { Input } from '../../../components/ui/input';
 import { Select } from '../../../components/ui/select';
 import { Button } from '../../../components/ui/button';
-import type { Exercice } from '@/types/exercice.types';
 import { historiqueService, type LigneHistoriqueCompteDto } from '@/services/historique.service';
-import { exerciceService } from '@/services/exercice.service';
 import { compteService } from '@/services/compte.service';
 import { HistoriqueTable } from './HistoriqueTable';
+import { useExerciceGlobal } from '@/contexts/ExerciceContext'; // 💡 IMPORT DU CONTEXTE GLOBAL
 
 export const HistoriqueComptePage: React.FC = () => {
-  const [exercices, setExercices] = useState<Exercice[]>([]);
-  const [exerciceSelectionne, setExerciceSelectionne] = useState<number | null>(null);
   const [codeCompte, setCodeCompte] = useState<string>('');
   const [dateDebut, setDateDebut] = useState<string>('');
   const [dateFin, setDateFin] = useState<string>('');
@@ -22,28 +19,26 @@ export const HistoriqueComptePage: React.FC = () => {
   const [lignes, setLignes] = useState<LigneHistoriqueCompteDto[]>([]);
   const [comptesOptions, setComptesOptions] = useState<{ label: string; value: string }[]>([]);
 
+  // 💡 DEPLOCAGE ET CONSOMMATION DE L'EXERCICE GLOBAL DE LA TOPBAR
+  const { exerciceId } = useExerciceGlobal();
+
   const formatDate = (dateInput: any): string => {
-  if (!dateInput) return '-';
-  
-  // Si Jackson envoie un tableau [AAAA, MM, DD]
-  if (Array.isArray(dateInput)) {
-    if (dateInput.length < 3) return '-';
-    const annee = dateInput[0];
-    const mois = String(dateInput[1]).padStart(2, '0');
-    const jour = String(dateInput[2]).padStart(2, '0');
-    return `${jour}/${mois}/${annee}`;
-  }
-
-  // Si c'est une chaîne ISO textuelle "2026-08-10"
-  if (typeof dateInput === 'string' && dateInput.includes('-')) {
-    const parties = dateInput.split('-');
-    if (parties.length === 3) {
-      return `${parties[2].substring(0, 2)}/${parties[1]}/${parties[0]}`;
+    if (!dateInput) return '-';
+    if (Array.isArray(dateInput)) {
+      if (dateInput.length < 3) return '-';
+      const annee = dateInput[0];
+      const mois = String(dateInput[1]).padStart(2, '0');
+      const jour = String(dateInput[2]).padStart(2, '0');
+      return `${jour}/${mois}/${annee}`;
     }
-  }
-
-  return String(dateInput);
-};
+    if (typeof dateInput === 'string' && dateInput.includes('-')) {
+      const parties = dateInput.split('-');
+      if (parties.length === 3) {
+        return `${parties[2].substring(0, 2)}/${parties[1]}/${parties[0]}`;
+      }
+    }
+    return String(dateInput);
+  };
 
   const formatMontant = (valeur: number) => {
     if (valeur === 0 || !valeur) return '-';
@@ -52,32 +47,22 @@ export const HistoriqueComptePage: React.FC = () => {
 
   const initialiserPage = async () => {
     try {
-      const [listEx, listComptes] = await Promise.all([
-        exerciceService.getAll(),
-        compteService.getAllComptes() // Doit renvoyer [{code, intitule}]
-      ]);
-      
-      setExercices(listEx);
+      const listComptes = await compteService.getAllComptes();
       setComptesOptions(listComptes.map(c => ({
         label: `${c.code} - ${c.intitule.toUpperCase()}`,
         value: c.code
       })));
-
-      if (listEx && listEx.length > 0) {
-        setExerciceSelectionne(listEx[0].id);
-        setDateFin(listEx[0].dateFin);
-      }
     } catch (err) {
-      console.error("Erreur d'initialisation", err);
+      console.error("Erreur d'initialisation du plan comptable", err);
     }
   };
 
-  const executerRecherche = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!exerciceSelectionne || !codeCompte) return;
+  const executerRecherche = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!exerciceId || !codeCompte) return;
     setLoading(true);
     try {
-      const data = await historiqueService.getHistorique(exerciceSelectionne, codeCompte, dateDebut, dateFin);
+      const data = await historiqueService.getHistorique(Number(exerciceId), codeCompte, dateDebut, dateFin);
       setLignes(data);
     } catch (err) {
       console.error(err);
@@ -87,14 +72,13 @@ export const HistoriqueComptePage: React.FC = () => {
     }
   };
 
-  // 💡 TRAITEMENT DU TELECHARGEMENT DES EXPORTS EXCEL / PDF
   const handleExport = async (type: 'excel' | 'pdf') => {
-    if (!exerciceSelectionne || !codeCompte) return;
+    if (!exerciceId || !codeCompte) return;
     setExporting(true);
     try {
       const blob = type === 'excel' 
-        ? await historiqueService.exporterExcel(exerciceSelectionne, codeCompte, dateDebut, dateFin)
-        : await historiqueService.exporterPdf(exerciceSelectionne, codeCompte, dateDebut, dateFin);
+        ? await historiqueService.exporterExcel(Number(exerciceId), codeCompte, dateDebut, dateFin)
+        : await historiqueService.exporterPdf(Number(exerciceId), codeCompte, dateDebut, dateFin);
       
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -104,13 +88,22 @@ export const HistoriqueComptePage: React.FC = () => {
       link.click();
       link.parentNode?.removeChild(link);
     } catch (err) {
-      console.error("Erreur d'export", err);
+      console.error("Erreur lors du téléchargement de l'extrait", err);
     } finally {
       setExporting(false);
     }
   };
 
-  useEffect(() => { initialiserPage(); }, []);
+  useEffect(() => { 
+    initialiserPage(); 
+  }, []);
+
+  // 💡 EFFET RELANCE AUTOMATIQUE : Re-déclenche l'extraction si l'utilisateur change d'exercice dans la TopBar
+  useEffect(() => {
+    if (exerciceId && codeCompte) {
+      executerRecherche();
+    }
+  }, [exerciceId]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto animate-fade-in">
@@ -119,16 +112,15 @@ export const HistoriqueComptePage: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-base font-bold text-navy-900 dark:text-navy-50">Historique d'un Compte Général</h2>
-            <p className="text-xs text-navy-400 dark:text-navy-500">Consultation chronologique et suivi du solde glissant</p>
+            <p className="text-xs text-navy-400 dark:text-navy-500">Consultation chronologique et suivi du solde glissant de la période</p>
           </div>
 
-          {/* 💡 BOUTONS D'EXPORTATION DISCRETS ET ELEGANTS */}
           {lignes.length > 0 && (
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleExport('excel')} disabled={exporting} className="text-xs font-bold uppercase h-[34px] border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+              <Button variant="outline" size="sm" onClick={() => handleExport('excel')} disabled={exporting} className="text-xs font-bold   h-[34px] border-emerald-200 text-emerald-700 hover:bg-emerald-50">
                 <i className="pi pi-file-excel mr-1 text-xs"></i> Excel
               </Button>
-              <Button variant="outline" size="sm" onClick={() => handleExport('pdf')} disabled={exporting} className="text-xs font-bold uppercase h-[34px] border-rose-200 text-rose-700 hover:bg-rose-50">
+              <Button variant="outline" size="sm" onClick={() => handleExport('pdf')} disabled={exporting} className="text-xs font-bold   h-[34px] border-rose-200 text-rose-700 hover:bg-rose-50">
                 <i className="pi pi-file-pdf mr-1 text-xs"></i> PDF
               </Button>
             </div>
@@ -137,35 +129,27 @@ export const HistoriqueComptePage: React.FC = () => {
 
         <Divider className="my-4 border-navy-100 dark:border-navy-800" />
 
-        <form onSubmit={executerRecherche} className="flex flex-col gap-4 bg-white dark:bg-navy-900 p-4 rounded-xl border border-navy-100 dark:border-navy-800 shadow-sm mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-navy-800 dark:text-navy-200 uppercase tracking-wider">Exercice</label>
-              <Select value={exerciceSelectionne} options={exercices.map(ex => ({ label: `${ex.libelle}`, value: ex.id }))} onChange={(e: any) => setExerciceSelectionne(e.value)} className="w-full text-xs" />
-            </div>
-            
-            {/* 💡 CORRECTION : Remplacement de l'input par votre composant Select local pour le choix du compte */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-navy-800 dark:text-navy-200 uppercase tracking-wider">Compte Général cible</label>
-              <Select value={codeCompte} options={comptesOptions} onChange={(e: any) => setCodeCompte(e.value)} filter placeholder="Sélectionner le compte..." className="w-full text-xs font-bold font-mono" />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-navy-800 dark:text-navy-200 uppercase tracking-wider">Date Début</label>
-              <Input type="date" value={dateDebut} onChange={e => setDateDebut(e.target.value)} className="w-full text-xs font-bold" />
-            </div>
+        {/* 💡 FILTRE ÉPURÉ ET COMPACTÉ SUR UNE SEULE LIGNE HORIZONTALE */}
+        <form onSubmit={executerRecherche} className="grid grid-cols-1 md:grid-cols-[45%_15%_15%_20%] gap-4 bg-navy-50/30 p-4 rounded-xl border border-navy-100 dark:border-navy-800 shadow-sm mb-6">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-navy-800 dark:text-navy-200   tracking-wider">Compte cible</label>
+            <Select value={codeCompte} options={comptesOptions} onChange={(e: any) => setCodeCompte(e.value)} filter placeholder="Sélectionner un compte" className="w-full text-xs font-bold font-mono " />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-navy-800 dark:text-navy-200 uppercase tracking-wider">Date Fin</label>
-              <Input type="date" value={dateFin} onChange={e => setDateFin(e.target.value)} className="w-full text-xs font-bold" />
-            </div>
-            <div className="md:col-span-2">
-              <Button type="submit" disabled={loading || !codeCompte} variant="default" size="sm" className="w-full h-[38px] font-bold uppercase text-xs tracking-wider">
-                {loading ? "Extraction des mouvements..." : "Générer l'historique"}
-              </Button>
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-navy-800 dark:text-navy-200   tracking-wider">Du (Date Début)</label>
+            <Input type="date" value={dateDebut} onChange={e => setDateDebut(e.target.value)} className="w-full text-xs font-bold "/>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-navy-800 dark:text-navy-200   tracking-wider">Au (Date Fin)</label>
+            <Input type="date" value={dateFin} onChange={e => setDateFin(e.target.value)} className="w-full text-xs font-bold " />
+          </div>
+
+          <div className="flex flex-col justify-end">
+            <Button type="submit" disabled={loading || !codeCompte || !exerciceId} variant="default" size="sm" className="w-full h-[30px] font-bold  text-xs tracking-wider shadow-xs">
+              {loading ? <><i className="pi pi-spin pi-spinner mr-2"></i> Extraction...</> : <><i className="pi pi-search mr-2"></i> Extraire l'historique</>}
+            </Button>
           </div>
         </form>
 

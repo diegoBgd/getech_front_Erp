@@ -19,7 +19,6 @@ export const PlanComptablePage: React.FC = () => {
   const [dataFetching, setDataFetching] = useState<boolean>(true);
   const [editingCompte, setEditingCompte] = useState<Compte | null>(null);
   const [globalFilterValue, setGlobalFilterValue] = useState<string>('');
-
   const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
   const [compteIdToDelete, setCompteIdToDelete] = useState<number | null>(null);
   const [compteCodeToDelete, setCompteCodeToDelete] = useState<string>('');

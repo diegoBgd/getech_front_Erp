@@ -18,7 +18,8 @@ export function CustomDataTable<T extends any[]>({
   const optionsEchelle = [
     { label: "Afficher 5 lignes", value: 5 },
     { label: "Afficher 10 lignes", value: 10 },
-    { label: "Afficher 20 lignes", value: 20 }
+    { label: "Afficher 20 lignes", value: 20 },
+    { label: "Afficher 50 lignes", value: 50 }
   ];
 
   return (
@@ -27,7 +28,8 @@ export function CustomDataTable<T extends any[]>({
         unstyled
         paginator
         rows={nombreLignes} 
-        paginatorTemplate="FirstPageLink PrevPageButton PageLinks NextPageButton LastPageButton"
+        /* 💡 AJOUT DES LIENS FIRST ET LAST DANS LE TEMPLATE DE NAVIGATION */
+        paginatorTemplate="FirstPageLink PrevPageButton PageLinks NextPageButton LastPageLink"
         responsiveLayout="scroll"
         className={cn("w-full text-left border-collapse text-xs text-navy-900 dark:text-navy-100", className)}
         pt={{
@@ -42,17 +44,14 @@ export function CustomDataTable<T extends any[]>({
           },
           paginator: {
             root: { className: "flex items-center justify-between p-2 px-4 border-t border-navy-200 dark:border-navy-800 bg-white dark:bg-navy-950 text-[11px] font-bold text-navy-500" },
-            prevPageButton: { className: "cursor-pointer select-none p-1.5 hover:bg-navy-50 dark:hover:bg-navy-800 rounded-md transition-colors" },
-            nextPageButton: { className: "cursor-pointer select-none p-1.5 hover:bg-navy-50 dark:hover:bg-navy-800 rounded-md transition-colors" },
-            firstPageButton: { className: "cursor-pointer select-none p-1.5 hover:bg-navy-50 dark:hover:bg-navy-800 rounded-md transition-colors" },
-            lastPageButton: { className: "cursor-pointer select-none p-1.5 hover:bg-navy-50 dark:hover:bg-navy-800 rounded-md transition-colors" },
+            prevPageButton: { className: "cursor-pointer select-none p-1.5 hover:bg-navy-50 dark:hover:bg-navy-800 rounded-md transition-colors text-navy-600 dark:text-navy-400" },
+            nextPageButton: { className: "cursor-pointer select-none p-1.5 hover:bg-navy-50 dark:hover:bg-navy-800 rounded-md transition-colors text-navy-600 dark:text-navy-400" },
+            /* 💡 APPLICATION DIRECTE DU DESIGN SUR LES BOUTONS EXTRÊMES */
+            firstPageButton: { className: "cursor-pointer select-none p-1.5 hover:bg-navy-50 dark:hover:bg-navy-800 rounded-md transition-colors text-navy-600 dark:text-navy-400" },
+            lastPageButton: { className: "cursor-pointer select-none p-1.5 hover:bg-navy-50 dark:hover:bg-navy-800 rounded-md transition-colors text-navy-600 dark:text-navy-400" },
             
-            // Conteneur global des pages
             pages: { className: "flex items-center gap-1" },
 
-            /* 💡 CORRECTION DU BOUTON DE PAGE :
-               Chaque numéro est stylisé individuellement. S'il possède l'état actif (.p-highlight), 
-               on force l'application de l'arrière-plan marine et du texte blanc. */
             pageButton: ({ context }: any) => ({
               className: cn(
                 "px-2.5 py-0.5 rounded-md text-navy-700 dark:text-navy-300 font-bold transition-all cursor-pointer hover:bg-navy-50 dark:hover:bg-navy-800",
@@ -66,10 +65,9 @@ export function CustomDataTable<T extends any[]>({
         {children}
       </DataTable>
 
-      {/* ZONE DE SELECTION DE LA DENSITE INDEPENDANTE */}
       <div className="flex items-center justify-between px-4 pb-3 pt-1 bg-white dark:bg-navy-950 border-t border-dashed border-navy-100 dark:border-navy-800">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold text-navy-400 uppercase tracking-wider">
+          <span className="text-[11px] text-navy-400 tracking-wider">
             Densité d'affichage :
           </span>
           <div className="w-[150px]">
@@ -77,15 +75,11 @@ export function CustomDataTable<T extends any[]>({
               value={nombreLignes}
               options={optionsEchelle}
               onChange={(e: any) => setNombreLignes(Number(e.value))}
-              className="text-xs font-bold shadow-2xs h-[30px]"
+              className="text-xs shadow-2xs h-[20px]"
             />
           </div>
         </div>
-        <div className="text-[11px] text-navy-400 font-medium italic">
-          Système de grille comptable Waangu
-        </div>
       </div>
-
     </div>
   );
 }

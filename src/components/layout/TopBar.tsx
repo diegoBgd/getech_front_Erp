@@ -6,6 +6,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { getPageTitle } from '@/routes/routesConfig';
 import { UserMenu } from '@/components/layout/UserMenu';
 import { useExerciceGlobal } from '@/contexts/ExerciceContext';
+import { Select } from '../ui/select'; // 💡 Votre composant UI original
 
 const mockNotifications = [
   { id: 1, text: 'Nouvelle commande #CMD-2456 reçue', time: 'Il y a 5 min' },
@@ -30,11 +31,10 @@ export function TopBar() {
   };
 
   return (
-    /* 💡 CORRECTION STRUCTURELLE : h-16 + grille à 3 colonnes pour isoler chaque zone de l'en-tête */
-  <header className="sticky top-0 z-20 grid h-16 grid-cols-[5%_30%_65%] items-center border-b border-navy-100 bg-white/80 px-4 backdrop-blur-sm dark:border-navy-800 dark:bg-navy-900/80 lg:px-6">
+    <header className="sticky top-0 z-20 grid h-16 grid-cols-[5%_30%_65%] items-center border-b border-navy-100 bg-white/80 px-4 backdrop-blur-sm dark:border-navy-800 dark:bg-navy-900/80 lg:px-6">
        
       {/* 🚪 COLONNE 1 (GAUCHE) : Bouton Hamburger */}
-      <div className="flex items-right justify-start">
+      <div className="flex items-center justify-start">
         <button
           type="button"
           onClick={handleHamburgerClick}
@@ -45,43 +45,34 @@ export function TopBar() {
         </button>
       </div>
 
-      {/* 🏛️ COLONNE 2 (CENTRE) : Titre de la page épuré de tout positionnement absolu conflictuel */}
-      <div className="flex  justify-center text-center">
+      {/* 🏛️ COLONNE 2 (CENTRE) : Titre de la page */}
+      <div className="flex justify-center text-center">
         <h1 className="hidden text-base font-semibold text-navy-800 dark:text-navy-100 md:block truncate max-w-full">
           {getPageTitle(location.pathname)}
         </h1>
       </div>
 
-      {/* 🛠️ COLONNE 3 (DROITE) : Bloc Exercice (Période) + Divider + Outils Système */}
+      {/* 🛠️ COLONNE 3 (DROITE) : Bloc Exercice Global + Outils Système */}
       <div className="flex items-center justify-end gap-1.5">
         
-        {/* Zone Période isolée dans son propre couloir de droite */}
-        <div className="w-[100px] sm:w-[180px] flex items-center gap-2 relative animate-fade-in shrink-0">
-           <i className="pi pi-calendar-clock text-lg" aria-hidden />
+        {/* Zone Période isolée et raccordée proprement à votre Select UI */}
+        <div className="w-[140px] sm:w-[220px] flex items-center gap-2 relative animate-fade-in shrink-0">
+          <i className="pi pi-calendar-clock text-base text-navy-400 dark:text-navy-500" aria-hidden />
           
-          <div className="relative w-full">
-            <select 
-              value={exerciceId || ''} 
-              onChange={e => setExerciceId(e.target.value ? Number(e.target.value) : null)}
-              className="w-full text-xs font-bold h-[34px] border border-navy-200 dark:border-navy-700 bg-white dark:bg-navy-800 rounded-lg px-2 appearance-none outline-none pr-7 cursor-pointer focus:border-navy-400 dark:focus:border-navy-500 transition-all text-navy-800 dark:text-navy-100 shadow-2xs font-mono"
-            >
-              {exercicesOptions.length === 0 ? (
-                <option value="">Chargement...</option>
-              ) : (
-                <>
-                  <option value="">Choisir l'exercice...</option>
-                  {exercicesOptions.map(ex => (
-                    <option key={ex.value} value={ex.value}>{ex.label}</option>
-                  ))}
-                </>
-              )}
-            </select>
-            <i className="pi pi-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-navy-400 dark:text-navy-500 pointer-events-none font-bold" />
+          <div className="w-full">
+            {/* 💡 CORRECTION DU SELECT : On utilise l'API standard de votre composant UI */}
+            <Select 
+              value={exerciceId} 
+              options={exercicesOptions} 
+              onChange={(e: any) => setExerciceId(e.value ? Number(e.value) : null)}
+              placeholder={exercicesOptions.length === 0 ? "Chargement..." : "Exercice..."}
+              className="w-full text-xs font-bold shadow-3xs h-[32px]"
+            />
           </div>
         </div>
 
-        {/* Ligne de séparation verticale réglementaire placée juste avant la cloche */}
-        <div className="h-6 w-px bg-navy-100 dark:bg-navy-700 mx-1 shrink-0" aria-hidden />
+        {/* Ligne de séparation verticale réglementaire */}
+        <div className="h-6 w-px bg-navy-100 dark:bg-navy-700 mx-1.5 shrink-0" aria-hidden />
 
         {/* 🔔 CLOCHE DE NOTIFICATION */}
         <button

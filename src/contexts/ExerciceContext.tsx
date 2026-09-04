@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ecritureService } from '../services/ecriture.service';
+
+import { exerciceService } from '@/services/exercice.service';
 
 interface ExerciceOption {
   label: string;
@@ -23,7 +24,7 @@ export const ExerciceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const initialiserExerciceGlobal = async () => {
       try {
-        const list = await ecritureService.getExercices();
+        const list = await exerciceService.getOuvert();
         const options = list.map((e: any) => ({
           label: `${e.code} : ${e.libelle || 'Exercice'}`,
           value: e.id
