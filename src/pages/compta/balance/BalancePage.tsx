@@ -113,7 +113,7 @@ export const BalancePage: React.FC = () => {
               <div className="flex flex-col gap-1">
                  <div className="h-[15px]"></div>
               <Button type="submit" disabled={loading || !exerciceId} variant="default" size="sm" className="w-full h-[30px] font-bold  text-xs tracking-wider shadow-xs">
-                {loading ? 'Calcul...' : 'Calculer la balance'}
+                {loading ? 'Encours...' : 'Afficher la balance'}
               </Button>
             </div>
             </div>

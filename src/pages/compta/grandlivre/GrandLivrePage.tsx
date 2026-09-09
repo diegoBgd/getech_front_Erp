@@ -7,7 +7,7 @@ import { grandLivreService } from '@/services/grandlivre.service';
 import { GrandLivreForm } from '@/components/forms/GrandLivreForm';
 import { GrandLivreTable } from './GrandLivreTable';
 import { Button } from '@/components/ui/button';
-import { useExerciceGlobal } from '@/contexts/ExerciceContext'; // 💡 IMPORT CONTEXTE
+import { useExerciceGlobal } from '@/contexts/ExerciceContext';
 
 export const GrandLivrePage: React.FC = () => {
   const [comptes, setComptes] = useState<any[]>([]);
@@ -18,7 +18,6 @@ export const GrandLivrePage: React.FC = () => {
     dateDebut: '', dateFin: '', compteDebut: '', compteFin: ''
   });
 
-  // 💡 LIAISON COMPTABLE COMMUNE : Récupère la période active de la TopBar
   const { exerciceId } = useExerciceGlobal();
 
   useEffect(() => {
@@ -42,6 +41,7 @@ export const GrandLivrePage: React.FC = () => {
       setBlocsComptes(await grandLivreService.getGrandLivre(Number(exerciceId), params)); 
     } catch (err) { 
       console.error(err); 
+      setBlocsComptes([]);
     } finally { 
       setLoading(false); 
     }
@@ -64,12 +64,7 @@ export const GrandLivrePage: React.FC = () => {
     }
   };
 
-  // 💡 EFFET RELANCE AUTOMATIQUE : Ré-exécute le rapport si l'exercice change dans la TopBar
-  useEffect(() => {
-    if (exerciceId) {
-      handleFetch(filtres);
-    }
-  }, [exerciceId]);
+  // 💡 DEBLOCAGE : L'effet de rafraîchissement automatique au changement d'exerciceId a été retiré !
 
   const fmtNum = (v: number) => (!v || v === 0) ? '' : new Intl.NumberFormat('fr-BI', { maximumFractionDigits: 0 }).format(v);
   const fmtDate = (str: string) => { if (!str) return ''; const [y, m, d] = str.split('-'); return `${d}/${m}/${y}`; };
@@ -87,7 +82,7 @@ export const GrandLivrePage: React.FC = () => {
           </div>
           {blocsComptes.length > 0 && (
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleDownload('excel')} className="text-xs font-bold   h-[34px] border-emerald-200 text-emerald-700 hover:bg-emerald-50"><i className="pi pi-file-excel text-xs mr-1"></i> Excel</Button>
+              <Button variant="outline" size="sm" onClick={() => handleDownload('excel')} className="text-xs font-bold h-[34px] border-emerald-200 text-emerald-700 hover:bg-emerald-50"><i className="pi pi-file-excel text-xs mr-1"></i> Excel</Button>
               <Button variant="outline" size="sm" onClick={() => handleDownload('pdf')} className="text-xs font-bold uppercase h-[34px] border-rose-200 text-rose-700 hover:bg-rose-50"> <i className="pi pi-file-pdf mr-1 text-xs"></i> PDF</Button>
             </div>
           )}
@@ -99,7 +94,7 @@ export const GrandLivrePage: React.FC = () => {
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16 gap-2"><ProgressSpinner style={{ width: '40px' }} /><span className="text-xs text-navy-400 font-bold">Génération du rapport...</span></div>
             ) : blocsComptes.length === 0 ? (
-              <div className="text-center p-12 border border-dashed border-navy-200 dark:border-navy-800 rounded-xl text-xs text-navy-400 font-medium">Sélectionnez les plages de comptes pour afficher le Grand Livre.</div>
+              <div className="text-center p-12 border border-dashed border-navy-200 dark:border-navy-800 rounded-xl text-xs text-navy-400 font-medium">Cliquez sur le bouton Charger pour extraire l'état du Grand Livre.</div>
             ) : (
               <GrandLivreTable blocs={blocsComptes} totalDebit={gTotalD} totalCredit={gTotalC} fmtNum={fmtNum} fmtDate={fmtDate} />
             )}

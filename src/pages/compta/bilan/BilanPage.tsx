@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Divider } from 'primereact/divider';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { Input } from '../../components/ui/input';
-import { Button } from '../../components/ui/button';
+import { Input } from '../../../components/ui/input';
+import { Button } from '../../../components/ui/button';
 import { bilanService, type BilanCompletResponseDto } from '@/services/bilan.service';
-import { BilanActifTable } from './BilanActifTable';
+
 import { BilanPassifTable } from './BilanPassifTable';
 import { useExerciceGlobal } from '@/contexts/ExerciceContext'; // 💡 IMPORT DU CONTEXTE GLOBAL
+import { BilanActifTable } from './BilanActifTable';
 
 export const BilanPage: React.FC = () => {
   const [dateFin, setDateFin] = useState<string>('');
@@ -65,7 +66,7 @@ export const BilanPage: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto animate-fade-in">
       <div className="bg-white dark:bg-navy-900 rounded-xl border border-navy-100 dark:border-navy-800 p-6 flex flex-col shadow-sm">
-        
+
         {/* EN-TÊTE DE PAGE AVEC FILTRES COMPACTÉS */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -75,10 +76,10 @@ export const BilanPage: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="w-[160px]">
-              <Input type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} className="text-xs font-bold h-[38px]" />
+              <Input type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} className="text-xs font-bold " />
             </div>
-            <Button variant="default" size="sm" onClick={executerCalculBilan} disabled={loading || !exerciceId} className="font-bold uppercase text-xs h-[38px] px-4">
-              <i className="pi pi-refresh mr-2 text-xs"></i> Calculer
+            <Button variant="default" size="sm" onClick={executerCalculBilan} disabled={loading || !exerciceId} className="font-bold  text-xs h-[30px] px-4">
+              <i className="pi pi-file-edit mr-2 text-xs"></i> Afficher
             </Button>
           </div>
         </div>
@@ -94,7 +95,11 @@ export const BilanPage: React.FC = () => {
 
         {/* AFFICHAGE DES DEUX MASSES PATRIMONIALES (ACTIF / PASSIF) */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-          <BilanActifTable lignes={donnees?.actif || []} formatMontant={formatMontant} formatDate={formatDate} />
+          <BilanActifTable
+            lignes={(donnees?.actif || []) as any[]}
+            formatMontant={formatMontant}
+            formatDate={formatDate}
+          />
           <BilanPassifTable lignes={donnees?.passif || []} formatMontant={formatMontant} formatDate={formatDate} />
         </div>
 

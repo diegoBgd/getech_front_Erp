@@ -8,9 +8,9 @@ import { SaisieEcriturePage } from '@/pages/compta/ecritures/SaisieEcriturePage'
 import { ExercicePage } from '@/pages/compta/exercice/ExercicePage';
 import { ParametresPage } from '@/pages/compta/parametreod/ParametresPage';
 import { GrandLivrePage } from '@/pages/compta/grandlivre/GrandLivrePage';
-import { BalancePage } from '@/pages/balance/BalancePage';
+import { BalancePage } from '@/pages/compta/balance/BalancePage';
 import { RubriqueFinancierePage } from '@/pages/compta/rubrique/RubriqueFinancierePage';
-import { BilanPage } from '@/pages/bilan/BilanPage';
+import { BilanPage } from '@/pages/compta/bilan/BilanPage';
 import { CompteResultatPage } from '@/pages/compta/resultat/CompteResultatPage';
 import { HistoriqueComptePage } from '@/pages/compta/movementcompte/HistoriqueComptePage';
 /**

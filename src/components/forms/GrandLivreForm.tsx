@@ -10,9 +10,7 @@ interface GrandLivreFormProps {
   onSubmit: (params: GrandLivreParams) => void;
 }
 
-export const GrandLivreForm: React.FC<GrandLivreFormProps> = ({
-  comptes, loading, onSubmit
-}) => {
+export const GrandLivreForm: React.FC<GrandLivreFormProps> = ({ comptes, loading, onSubmit }) => {
   const [params, setParams] = useState<GrandLivreParams>({
     dateDebut: '', dateFin: '', compteDebut: '', compteFin: ''
   });
@@ -29,14 +27,14 @@ export const GrandLivreForm: React.FC<GrandLivreFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-[10%_10%_35%_40%] gap-3 p-4 bg-navy-50/30 dark:bg-navy-950/20 rounded-lg border border-navy-100 dark:border-navy-800">
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-[13%_13%_30%_30%_10%] gap-3 p-4 bg-navy-50/30 dark:bg-navy-950/20 rounded-lg border border-navy-100 dark:border-navy-800 items-end">
       <div className="flex flex-col gap-1">
         <label className="text-xs font-semibold text-navy-700 dark:text-navy-300">Du (Date)</label>
-        <Input type="date" value={params.dateDebut} onChange={(e) => setParams({ ...params, dateDebut: e.target.value })} />
+        <Input type="date" value={params.dateDebut} onChange={(e) => setParams({ ...params, dateDebut: e.target.value })} className="h-[34px]" />
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs font-semibold text-navy-700 dark:text-navy-300">Au (Date)</label>
-        <Input type="date" value={params.dateFin} onChange={(e) => setParams({ ...params, dateFin: e.target.value })} />
+        <Input type="date" value={params.dateFin} onChange={(e) => setParams({ ...params, dateFin: e.target.value })} className="h-[34px]" />
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs font-semibold text-navy-700 dark:text-navy-300">Compte Début</label>
@@ -44,12 +42,15 @@ export const GrandLivreForm: React.FC<GrandLivreFormProps> = ({
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs font-semibold text-navy-700 dark:text-navy-300">Compte Fin</label>
-        <div className="flex gap-2">
-          <Select value={params.compteFin} options={comptes} onChange={(e) => setParams({ ...params, compteFin: e.value })} placeholder="Au n°..." filter className="flex-1" />
-          <Button type="submit" variant="default" size="sm" disabled={loading} className="h-[30px] shrink-0 font-bold  text-xs">
-            Filtrer
+        <Select value={params.compteFin} options={comptes} onChange={(e) => setParams({ ...params, compteFin: e.value })} placeholder="Au n°..." filter className="flex-1" />
+      </div>
+        <div className="flex flex-col gap-1">
+          
+          <Button type="submit" variant="default" size="sm" disabled={loading} className="h-[30px] shrink-0 font-bold text-xs uppercase px-4 shadow-xs">
+            {loading ? <i className="pi pi-spin pi-spinner mr-2"></i> : <i className="pi pi-download mr-2"></i>}
+            Charger
           </Button>
-        </div>
+        
       </div>
     </form>
   );

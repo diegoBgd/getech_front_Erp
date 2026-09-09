@@ -13,7 +13,17 @@ export interface LigneActifDto {
   netN1: number;
   niveau: number; // Utile pour l'indentation graphique
 }
-
+// Interface pour le Passif
+export  interface LignePassifDto {
+  id?: number;
+  code: string;
+  intitule: string;
+  modeCalcul: 'COMPTES' | 'SOMME';
+  niveau?: number;
+  parentId?: number | null;
+  montantN: number;
+  montantN1: number;
+}
 //  2. STRUCTURE DU PASSIF (2 COLONNES DE MONTANTS)
 export interface LigneSyntheseDto {
   codeRubrique: string;
@@ -25,6 +35,7 @@ export interface LigneSyntheseDto {
 
 //  3. ENVELOPPE GLOBALE DU BILAN COMPLET
 export interface BilanCompletResponseDto {
+  exerciceId: number;
   actif: LigneActifDto[];
   passif: LigneSyntheseDto[];
 }

@@ -24,7 +24,7 @@ export const SaisieEcriturePage: React.FC = () => {
   const [journaux, setJournaux] = useState<{ label: string; value: string }[]>([]);
   const [comptes, setComptes] = useState<{ label: string; value: string }[]>([]);
 
-  // 💡 CONSOMMATION DE LA PÉRIODE COMPTABLE COMMUNE DE LA TOPBAR
+  //  CONSOMMATION DE LA PÉRIODE COMPTABLE COMMUNE DE LA TOPBAR
   const { exerciceId, exercicesOptions } = useExerciceGlobal();
 
   const chargerDonneesReferentiels = async () => {
@@ -144,7 +144,7 @@ export const SaisieEcriturePage: React.FC = () => {
             </h2>
             <p className="text-xs text-navy-400 dark:text-navy-500">Enregistrement et modification des écritures avec contrôle de contrepartie</p>
           </div>
-          <Button type="button" variant="outline" size="sm" onClick={() => setModalPiecesVisible(true)} className="font-bold  text-xs h-[36px] border-navy-200 text-navy-700 hover:bg-navy-50">
+          <Button type="button" variant="outline" size="sm" onClick={() => setModalPiecesVisible(true)} className="font-bold  text-xs h-[30px] border-navy-200 text-navy-700 hover:bg-navy-50">
             <i className="pi pi-search mr-2 text-xs"></i> Rechercher
           </Button>
         </div>
