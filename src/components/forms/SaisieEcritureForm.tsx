@@ -93,7 +93,7 @@ export const SaisieEcritureForm: React.FC<SaisieFormProps> = ({ journaux, compte
     }} className="space-y-4">
       
       {/* 📅 EN-TÊTE ÉPURÉ DE PIÈCE ADAPTÉ ET PROPRE */}
-      <div className="grid grid-cols-1 md:grid-cols-[45%_20%_30%] gap-4 p-4 bg-navy-50/40 rounded-xl border border-navy-100">
+      <div className="grid grid-cols-1 md:grid-cols-[50%_15%_30%] gap-4 p-4 bg-navy-50/40 rounded-xl border border-navy-100">
         <div className="flex flex-col gap-1"><label className="text-[11px] font-bold text-navy-400">Journal *</label><Select value={codeJournal} options={journaux} filter onChange={e => setCodeJournal(e.value)} disabled={isReadOnly} required className="text-xs font-bold" /></div>
         <div className="flex flex-col gap-1"><label className="text-[11px] font-bold text-navy-400">Date *</label><Input type="date" value={datePiece} onChange={e => setDatePiece(e.target.value)} required className="text-xs font-bold" /></div>
         <div className="flex flex-col gap-1"><label className="text-[11px] font-bold text-navy-400">Libellé / Référence Général</label><Input type="text" value={libelleGeneral} onChange={e => setLibelleGeneral(e.target.value)} placeholder="Désignation de l'opération..." className="text-xs font-bold" /></div>

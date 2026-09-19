@@ -4,14 +4,17 @@ import { Button } from '@/components/ui/button';
 import type { RubriqueFinanciere } from '@/services/rubrique.service';
 import { CustomDataTable } from '@/components/ui/data-table';
 
+
 interface TableProps {
   rubriques: RubriqueFinanciere[];
-  onEdit: (rubrique: RubriqueFinanciere) => void; // 💡 AJOUT : Déclencheur pour charger le formulaire en édition
+  rubriqueEnEdition: RubriqueFinanciere | null; // 💡 AJOUT : Reçoit la ligne actuellement en cours de modification
+  onEdit: (rubrique: RubriqueFinanciere) => void;
   onDelete: (id: number) => void;
 }
 
-export const RubriqueTable: React.FC<TableProps> = ({ rubriques, onEdit, onDelete }) => {
+export const RubriqueTable: React.FC<TableProps> = ({ rubriques, rubriqueEnEdition, onEdit, onDelete }) => {
   
+  // Gabarit : Formate la nature comptable avec les badges design ERP
   const natureTemplate = (rowData: RubriqueFinanciere) => {
     return (
       <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
@@ -41,16 +44,21 @@ export const RubriqueTable: React.FC<TableProps> = ({ rubriques, onEdit, onDelet
     );
   };
 
-  // 💡 GABARIT COMPACTÉ CONTENANT LES DEUX ACTIONS SYSTÈME (MODIFIER + SUPPRIMER)
   const actionTemplate = (rowData: RubriqueFinanciere) => {
+    const estEnCoursDEdition = rubriqueEnEdition && rubriqueEnEdition.id === rowData.id;
+
     return rowData.id ? (
       <div className="flex items-center justify-center gap-1">
-        {/* Bouton de Modification */}
+        {/* Bouton de Modification stylisé selon son état actif d'édition */}
         <Button 
           type="button" 
-          variant="ghost" 
+          variant={estEnCoursDEdition ? "default" : "ghost"} 
           size="sm" 
-          className="h-7 w-7 p-0 text-sky-accent-600 hover:bg-sky-accent-50 dark:hover:bg-sky-accent-950/30 rounded-md transition-colors" 
+          className={`h-7 w-7 p-0 rounded-md transition-colors ${
+            estEnCoursDEdition 
+              ? 'bg-sky-accent-500 text-white shadow-xs hover:bg-sky-accent-600' 
+              : 'text-sky-accent-600 hover:bg-sky-accent-50 dark:hover:bg-sky-accent-950/30'
+          }`} 
           onClick={() => onEdit(rowData)}
           title="Modifier cette rubrique"
         >
@@ -72,20 +80,29 @@ export const RubriqueTable: React.FC<TableProps> = ({ rubriques, onEdit, onDelet
     ) : null;
   };
 
+  // 💡 SOLUTION DE COLORATION DYNAMIQUE DE LIGNE (ROW CLASSNAME)
+  const rowClassName = (rowData: any) => {
+    const estSelectionnee = rubriqueEnEdition && rubriqueEnEdition.id === rowData.id;
+    return estSelectionnee 
+      ? '!bg-sky-accent-50/40 dark:!bg-sky-accent-950/20 !font-bold transition-all border-l-4 border-l-sky-accent-500 transition-none' 
+      : 'transition-colors';
+  };
+
   return (
     <CustomDataTable 
       value={rubriques} 
+      rowClassName={rowClassName} // 💡 Injection du gestionnaire de style de ligne
       emptyMessage="Aucune rubrique financière configurée pour cet état."
     >
-      <Column field="ordre" header="Ordre" className="font-bold text-navy-400 text-center w-[70px]" />
-      <Column field="code" header="Code" className="font-mono font-bold text-navy-600 dark:text-navy-400 w-[110px]" />
-      <Column field="intitule" header="Intitulé Ligne du Rapport" className="font-bold text-navy-900 dark:text-navy-50" />
+      <Column field="ordre" header="Ordre" className="font-bold text-navy-400 text-center w-[50px]" />
+      <Column field="code" header="Code" className="font-mono font-bold text-navy-600 dark:text-navy-400 w-[50px]" />
+      <Column field="intitule" header="Rubriques" className="font-bold text-navy-900 dark:text-navy-50 w-[180px]" />
       <Column header="Nature" body={natureTemplate} className="w-[100px]" />
       <Column field="modeCalcul" header="Mode" className="font-bold text-navy-500 w-[90px]" />
       <Column header="Plage Brut" body={plagePrincipalTemplate} className="w-[130px]" />
       <Column header="Plage Amort." body={plageCorrectifTemplate} className="w-[130px]" />
       <Column field="sensSoldeAdmis" header="Solde" className="text-[10px] text-navy-400 font-bold w-[90px]" />
-      <Column header="Actions" body={actionTemplate} className="text-center w-[90px]" />
+      <Column header="Actions" body={actionTemplate} className="text-center w-[80px]" />
     </CustomDataTable>
   );
 };

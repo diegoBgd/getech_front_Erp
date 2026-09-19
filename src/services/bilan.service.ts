@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-
 const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/erp/compta/etats-synthese`;
 
-//  1. STRUCTURE DE L'ACTIF (4 COLONNES DE MONTANTS)
 export interface LigneActifDto {
   codeRubrique: string;
   intitule: string;
@@ -11,10 +9,10 @@ export interface LigneActifDto {
   amortissementN: number;
   netN: number;
   netN1: number;
-  niveau: number; // Utile pour l'indentation graphique
+  niveau: number; 
 }
-// Interface pour le Passif
-export  interface LignePassifDto {
+
+export interface LignePassifDto {
   id?: number;
   code: string;
   intitule: string;
@@ -24,38 +22,43 @@ export  interface LignePassifDto {
   montantN: number;
   montantN1: number;
 }
-//  2. STRUCTURE DU PASSIF (2 COLONNES DE MONTANTS)
+
 export interface LigneSyntheseDto {
   codeRubrique: string;
   intitule: string;
   montantN: number;
   montantN1: number;
-  niveau: number; // Utile pour l'indentation graphique
+  niveau: number; 
 }
 
-//  3. ENVELOPPE GLOBALE DU BILAN COMPLET
 export interface BilanCompletResponseDto {
   exerciceId: number;
   actif: LigneActifDto[];
   passif: LigneSyntheseDto[];
 }
 
-//  4. SERVICE AXIOS ASSOCIE
 export const bilanService = {
-  
-  extraireBilan: async (
-    exerciceId: number, 
-    dateFin: string
-  ): Promise<BilanCompletResponseDto> => {
-    
-    const response = await axios.get<BilanCompletResponseDto>(
-      `${API_BASE}/bilan/${exerciceId}`,
-      {
-        params: { dateFin } // Format attendu par Spring : 'YYYY-MM-DD'
-      }
-    );
-    
+  extraireBilan: async (exerciceId: number, dateFin: string): Promise<BilanCompletResponseDto> => {
+    const response = await axios.get<BilanCompletResponseDto>(`${API_BASE}/bilan/${exerciceId}`, {
+      params: { dateFin }
+    });
+    return response.data;
+  },
+
+  // 💡 AJOUT : Fonctions d'exportation de production connectées au contrôleur des états de synthèse
+  downloadExcel: async (exerciceId: number, dateFin: string): Promise<Blob> => {
+    const response = await axios.get(`${API_BASE}/bilan/${exerciceId}/excel`, {
+      params: { dateFin },
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
+  downloadPDF: async (exerciceId: number, dateFin: string): Promise<Blob> => {
+    const response = await axios.get(`${API_BASE}/bilan/${exerciceId}/pdf`, {
+      params: { dateFin },
+      responseType: 'blob'
+    });
     return response.data;
   }
-
 };

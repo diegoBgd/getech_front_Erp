@@ -89,9 +89,9 @@ export const RubriqueFinancierePage: React.FC = () => {
 
         <div className="flex flex-col gap-6">
           {/* 💡 INJECTION DE L'ÉTAT D'ÉDITION ET DU RACCORDEMENT ANNULATION */}
-          <RubriqueForm 
-            typeEtat={typeEtat} 
-            onSuccess={() => { chargerDonnees(); setRubriqueEnEdition(null); }} 
+          <RubriqueForm
+            typeEtat={typeEtat}
+            onSuccess={() => { chargerDonnees(); setRubriqueEnEdition(null); }}
             initialValues={rubriqueEnEdition}
             onCancelEdit={() => setRubriqueEnEdition(null)}
           />
@@ -108,7 +108,12 @@ export const RubriqueFinancierePage: React.FC = () => {
             </div>
           ) : (
             /* 💡 RACCORDEMENT DU DÉCLENCHEUR SUR LE TABLEAU DE RESTITUTION */
-            <RubriqueTable rubriques={rubriques} onEdit={(r) => setRubriqueEnEdition(r)} onDelete={handleDeleteTrigger} />
+            <RubriqueTable
+              rubriques={rubriques}
+              rubriqueEnEdition={rubriqueEnEdition} // ◄ Nouvelle liaison obligatoire
+              onEdit={(r) => setRubriqueEnEdition(r)}
+              onDelete={handleDeleteTrigger}
+            />
           )}
         </div>
       </div>

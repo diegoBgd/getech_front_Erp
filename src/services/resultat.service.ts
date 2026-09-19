@@ -19,7 +19,7 @@ export interface ResultatResponseDto {
 
 export const resultatService = {
   extraireCompteResultat: async (exerciceId: number, dateFin: string): Promise<ResultatResponseDto> => {
-    const response = await axios.get<ResultatResponseDto>( `${API_BASE}/${exerciceId}`, {
+    const response = await axios.get<ResultatResponseDto>( `${API_BASE}/resultat/${exerciceId}`, {
       params: { dateFin }
     });
     return response.data;

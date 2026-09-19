@@ -4,20 +4,21 @@ export interface RubriqueFinanciere {
   id?: number;
   code: string;
   intitule: string;
-  typeEtat: 'BILAN' | 'COMPTE_RESULTAT';
+  typeEtat: 'BILAN' | 'COMPTE_RESULTAT' | 'FLUX_TRESO'; // 💡 Type élargi
   nature: 'ACTIF' | 'PASSIF' | 'PRODUIT' | 'CHARGE';
   modeCalcul: 'COMPTES' | 'SOMME';
   plageComptesPrincipal?: string;
   plageComptesCorrectif?: string;
-  sensSoldeAdmis: 'TOUS' | 'DEBITEUR' | 'CREDITEUR';
+  sensSoldeAdmis?: 'TOUS' | 'DEBITEUR' | 'CREDITEUR';
+  parentId?: number | null;
   ordre: number;
-  parentId?: number | null;   // 💡 ALIGNEMENT : Utilisation de l'ID direct à la place de l'objet imbriqué
-  parentCode?: string | null;
 }
 
 const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/erp/compta/efi`;
+
 export const rubriqueService = {
-  getParEtat: async (typeEtat: 'BILAN' | 'COMPTE_RESULTAT'): Promise<RubriqueFinanciere[]> => {
+  // 💡 MIGRATION : Signature corrigée pour accepter la valeur FLUX_TRESO
+  getParEtat: async (typeEtat: 'BILAN' | 'COMPTE_RESULTAT' | 'FLUX_TRESO'): Promise<RubriqueFinanciere[]> => {
     const res = await axios.get(`${API_BASE}/${typeEtat}`);
     return res.data;
   },
@@ -26,8 +27,9 @@ export const rubriqueService = {
     const res = await axios.post(`${API_BASE}`, rubrique);
     return res.data;
   },
-  // 💡 AJOUT DANS L'OBJET rubriqueService
-  getToutesParEtat: async (typeEtat: 'BILAN' | 'COMPTE_RESULTAT'): Promise<RubriqueFinanciere[]> => {
+
+  // 💡 MIGRATION : Signature corrigée également pour la liste des pivots parents
+  getToutesParEtat: async (typeEtat: 'BILAN' | 'COMPTE_RESULTAT' | 'FLUX_TRESO'): Promise<RubriqueFinanciere[]> => {
     const res = await axios.get(`${API_BASE}/${typeEtat}/all`);
     return res.data;
   },

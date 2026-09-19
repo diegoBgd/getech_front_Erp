@@ -1,22 +1,8 @@
+import type { LigneActifDto } from '@/services/bilan.service';
 import React from 'react';
 
-// 💡 DÉFINITION LOCALE DU VRAI CONTRAT DE L'ACTIF ISSU DE VOTRE BACKEND
-export interface LigneActifDto {
-  id?: number;
-  code: string;
-  intitule: string;
-  modeCalcul: 'COMPTES' | 'SOMME';
-  niveau?: number;
-  parent?: any;
-  parentId?: number | null;
-  brut: number;
-  amortissement: number;
-  netN: number;
-  netNMinus1: number;
-}
-
 interface ActifTableProps {
-  lignes: LigneActifDto[]; // 💡 Utilisation du bon type natif de l'Actif
+  lignes: LigneActifDto[];
   formatMontant: (valeur: number) => string;
   formatDate: (dateStr: string) => string;
 }
@@ -42,26 +28,20 @@ export const BilanActifTable: React.FC<ActifTableProps> = ({ lignes, formatMonta
           </thead>
           <tbody className="divide-y divide-navy-50 dark:divide-navy-800 text-xs text-navy-700 dark:text-navy-300">
             {(lignes && Array.isArray(lignes) ? lignes : []).map((l, i) => {
-              const estSomme = l.modeCalcul === 'SOMME' || l.niveau === 0;
-              const aUnParent = l.parent || l.parentId || (l.niveau && l.niveau > 0);
+              // Une ligne sans valeur d'amortissement ou de niveau 0 est considérée comme une masse de totalisation
+              const estSomme = l.niveau === 0 || l.codeRubrique.startsWith('TOT');
+              const aUnParent = l.niveau > 0;
 
               return (
-                <tr 
-                  key={i} 
-                  className={`hover:bg-navy-50/10 dark:hover:bg-navy-800/10 ${
-                    estSomme ? 'font-black bg-navy-50/20 dark:bg-navy-900/20 text-navy-950 dark:text-white' : ''
-                  }`}
-                >
-                  <td 
-                    className="p-3 uppercase text-[10.5px] tracking-wide"
-                    style={{ paddingLeft: aUnParent ? '32px' : '16px' }}
-                  >
+                <tr key={i} className={`hover:bg-navy-50/10 dark:hover:bg-navy-800/10 ${estSomme ? 'font-black bg-navy-50/20 dark:bg-navy-900/20 text-navy-950 dark:text-white' : ''}`}>
+                  {/* Indentation dynamique pilotée par la profondeur (l.niveau) de la BDD */}
+                  <td className="p-3 uppercase text-[10.5px] tracking-wide" style={{ paddingLeft: `${(l.niveau * 16) + 16}px` }}>
                     {l.intitule}
                   </td>
-                  <td className="p-3 text-right font-mono text-navy-900 dark:text-navy-50">{formatMontant(l.brut || 0)}</td>
-                  <td className="p-3 text-right font-mono text-navy-400 dark:text-navy-500">{formatMontant(l.amortissement || 0)}</td>
+                  <td className="p-3 text-right font-mono text-navy-900 dark:text-navy-50">{formatMontant(l.brutN || 0)}</td>
+                  <td className="p-3 text-right font-mono text-navy-400 dark:text-navy-500">{formatMontant(l.amortissementN || 0)}</td>
                   <td className="p-3 text-right font-mono text-navy-900 dark:text-navy-50 font-bold">{formatMontant(l.netN || 0)}</td>
-                  <td className="p-3 text-right font-mono text-navy-400 dark:text-navy-500 pr-4">{formatMontant(l.netNMinus1 || 0)}</td>
+                  <td className="p-3 text-right font-mono text-navy-400 dark:text-navy-500 pr-4">{formatMontant(l.netN1 || 0)}</td>
                 </tr>
               );
             })}
