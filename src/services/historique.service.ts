@@ -1,4 +1,5 @@
-import axios from 'axios';
+import { api } from "./api";
+
 
 const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/erp/compta/historique_comptes`;
 export interface LigneHistoriqueCompteDto {
@@ -18,7 +19,7 @@ export const historiqueService = {
     dateDebut?: string,
     dateFin?: string
   ): Promise<LigneHistoriqueCompteDto[]> => {
-    const response = await axios.get<LigneHistoriqueCompteDto[]>(
+    const response = await api.get<LigneHistoriqueCompteDto[]>(
       `${API_BASE}/${exerciceId}`, 
       { params: { codeCompte, dateDebut, dateFin } }
     );
@@ -32,7 +33,7 @@ export const historiqueService = {
     dateDebut?: string,
     dateFin?: string
   ): Promise<Blob> => {
-    const response = await axios.get(
+    const response = await api.get(
       `/api/finance/comptes/historique/${exerciceId}/export/excel`,
       {
         params: { codeCompte, dateDebut, dateFin },
@@ -49,7 +50,7 @@ export const historiqueService = {
     dateDebut?: string,
     dateFin?: string
   ): Promise<Blob> => {
-    const response = await axios.get(
+    const response = await api.get(
       `/api/finance/comptes/historique/${exerciceId}/export/pdf`,
       {
         params: { codeCompte, dateDebut, dateFin },

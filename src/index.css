@@ -73,3 +73,22 @@ body {
   @apply bg-navy-50/40 text-navy-600 font-semibold px-4 py-4 text-[11px] uppercase tracking-wider border-b border-navy-100 text-left transition-colors;
   @apply dark:bg-navy-900/30 dark:text-navy-400 dark:border-navy-800;
 }
+/* 💡 CORRECTIF ABSOLU POUR TOUS LES SÉLECTEURS DE L'ERP GATECH */
+.p-dropdown-panel, 
+.p-dropdown-items-wrapper,
+[role="listbox"] {
+    max-height: 250px !important;
+    overflow-y: auto !important;
+}
+
+/* Forçage de l'affichage de la scrollbar si elle est masquée par le thème */
+.thin-scrollbar::-webkit-scrollbar,
+.p-dropdown-items-wrapper::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb,
+.p-dropdown-items-wrapper::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1 !important;
+    border-radius: 4px !important;
+}

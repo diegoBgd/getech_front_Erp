@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ExerciceProvider } from '@/contexts/ExerciceContext'; // 💡 AJOUT DE L'IMPORTATION
 import { router } from '@/routes/AppRouter';
 
+
 /**
  * Racine de l'application : assemble tous les Providers (PrimeReact, Thème,
  * Sidebar, Auth, Exercice) puis délègue le rendu des pages à React Router.
@@ -13,6 +14,7 @@ import { router } from '@/routes/AppRouter';
 function App() {
   return (
     <PrimeReactProvider>
+     
       <ThemeProvider>
         <AuthProvider>
           <SidebarProvider>

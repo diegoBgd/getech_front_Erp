@@ -1,33 +1,34 @@
 import axios from 'axios';
 
-/**
- * Instance Axios centralisée.
- *
- * Toute la configuration transverse (base URL, headers, intercepteurs
- * d'authentification, gestion globale des erreurs 401/403, ...) vit ici,
- * pour que les services métier (categoryService, etc.) restent simples.
- */
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api',
   timeout: 15000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Emplacement prévu pour l'intercepteur d'authentification (token JWT, refresh, ...).
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('waangu:token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Point d'extension unique pour la gestion globale des erreurs (toast, logout auto, ...).
+    // 💡 UNIQUE RÔLE DU RÉSEAU : Lever le drapeau de panne sans toucher au visuel HTML
+    if (!error.response) {
+      console.warn("Échec de liaison réseau détecté par l'intercepteur.");
+      sessionStorage.setItem('gatech_v3_clear', 'true');
+      window.dispatchEvent(new Event('erp:network_offline'));
+      return Promise.reject(error);
+    }
+
+    if (error.response.status === 401 || error.response.status === 403) {
+      localStorage.removeItem('waangu:token');
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login?session=expired';
+      }
+    }
     return Promise.reject(error);
-  },
+  }
 );

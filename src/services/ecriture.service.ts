@@ -1,6 +1,7 @@
 
 import type { EcritureComptableDto } from '@/types';
-import axios from 'axios';
+import { api } from './api';
+
 
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/erp/compta/ecritures';
@@ -9,46 +10,46 @@ export const ecritureService = {
   // Enregistrer une pièce comptable complète (En-tête + Lignes)
   enregistrerPiece: async (data: EcritureComptableDto): Promise<any> => {
    
-    const response = await axios.post(`${API_BASE}/saisie`, data);
+    const response = await api.post(`${API_BASE}/saisie`, data);
     return response.data;
   },
 
   // Récupérer la liste des exercices pour le sélecteur
   getExercices: async (): Promise<any[]> => {
-    const response = await axios.get(`${API_BASE}/exercices`);
+    const response = await api.get(`${API_BASE}/exercices`);
     return response.data;
   },
 
   // Récupérer les journaux pour le sélecteur
   getJournaux: async (): Promise<any[]> => {
-    const response = await axios.get(`${API_BASE}/journaux`);
+    const response = await api.get(`${API_BASE}/journaux`);
     return response.data;
   },
 
   // Récupérer les comptes de détail pour la complétion des lignes
   getComptesDetail: async (): Promise<any[]> => {
-    const response = await axios.get(`${API_BASE}/comptes`);
+    const response = await api.get(`${API_BASE}/comptes`);
     // On ne garde que les comptes de détail (non collectifs) pour la saisie directe
     return response.data.filter((c: any) => !c.isCollectif);
   },
     // Récupérer toutes les pièces (pour alimenter le tableau de l'historique)
   getAllPieces: async (): Promise<any[]> => {
-    const response = await axios.get(`${API_BASE}/all`);
+    const response = await api.get(`${API_BASE}/all`);
     return response.data;
   },
 
   // Récupérer le détail complet d'une pièce (en-tête + lignes) pour l'afficher
   getPieceDetails: async (id: number): Promise<any> => {
-    const response = await axios.get(`${API_BASE}/saisie/${id}`);
+    const response = await api.get(`${API_BASE}/saisie/${id}`);
     return response.data;
   },
   updatePiece: async (id: number, data: EcritureComptableDto): Promise<any> => {
-    const response = await axios.put(`${API_BASE}/update/${id}`, data);
+    const response = await api.put(`${API_BASE}/update/${id}`, data);
     return response.data;
   },
 
   deletePiece: async (id: number): Promise<void> => {
-    await axios.delete(`${API_BASE}/delete/${id}`);
+    await api.delete(`${API_BASE}/delete/${id}`);
   },
 rechercherPieces: async (
     exerciceId: number,
@@ -56,7 +57,7 @@ rechercherPieces: async (
     dateDebut?: string,
     dateFin?: string
   ): Promise<EcritureComptableDto[]> => {
-    const response = await axios.get<EcritureComptableDto[]>(`${API_BASE}/recherche/${exerciceId}`, {
+    const response = await api.get<EcritureComptableDto[]>(`${API_BASE}/recherche/${exerciceId}`, {
       params: { codeJournal, dateDebut, dateFin }
     });
     return response.data;

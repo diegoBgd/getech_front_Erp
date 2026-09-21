@@ -1,4 +1,5 @@
-import axios from 'axios';
+import { api } from "./api";
+
 
 
 const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/erp/compta/etats-synthese`;
@@ -19,7 +20,7 @@ export interface ResultatResponseDto {
 
 export const resultatService = {
   extraireCompteResultat: async (exerciceId: number, dateFin: string): Promise<ResultatResponseDto> => {
-    const response = await axios.get<ResultatResponseDto>( `${API_BASE}/resultat/${exerciceId}`, {
+    const response = await api.get<ResultatResponseDto>( `${API_BASE}/resultat/${exerciceId}`, {
       params: { dateFin }
     });
     return response.data;

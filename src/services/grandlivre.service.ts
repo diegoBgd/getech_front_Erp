@@ -1,5 +1,6 @@
 import type { GrandLivreCompteBloc, GrandLivreParams } from '@/types/grandlivre.types';
-import axios from 'axios';
+import { api } from './api';
+
 
 
 const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/erp/compta/grand-livre`;
@@ -11,16 +12,16 @@ export const grandLivreService = {
    * @param params Objet contenant les dates et plages de comptes optionnelles
    */
   getGrandLivre: async (exerciceId: number, params: GrandLivreParams): Promise<GrandLivreCompteBloc[]> => {
-    const response = await axios.get<GrandLivreCompteBloc[]>(`${API_BASE}/${exerciceId}`, { params });
+    const response = await api.get<GrandLivreCompteBloc[]>(`${API_BASE}/${exerciceId}`, { params });
     return response.data;
   },
    downloadExcel: async (exerciceId: number, params: GrandLivreParams): Promise<Blob> => {
-    const res = await axios.get(`${API_BASE}/${exerciceId}/export/excel`, { params, responseType: 'blob' });
+    const res = await api.get(`${API_BASE}/${exerciceId}/export/excel`, { params, responseType: 'blob' });
     return res.data;
   },
 
   downloadPDF: async (exerciceId: number, params: GrandLivreParams): Promise<Blob> => {
-    const res = await axios.get(`${API_BASE}/${exerciceId}/export/pdf`, { params, responseType: 'blob' });
+    const res = await api.get(`${API_BASE}/${exerciceId}/export/pdf`, { params, responseType: 'blob' });
     return res.data;
   }
 };

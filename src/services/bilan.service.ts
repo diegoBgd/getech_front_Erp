@@ -1,4 +1,5 @@
-import axios from 'axios';
+import { api } from "./api";
+
 
 const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/erp/compta/etats-synthese`;
 
@@ -39,7 +40,7 @@ export interface BilanCompletResponseDto {
 
 export const bilanService = {
   extraireBilan: async (exerciceId: number, dateFin: string): Promise<BilanCompletResponseDto> => {
-    const response = await axios.get<BilanCompletResponseDto>(`${API_BASE}/bilan/${exerciceId}`, {
+    const response = await api.get<BilanCompletResponseDto>(`${API_BASE}/bilan/${exerciceId}`, {
       params: { dateFin }
     });
     return response.data;
@@ -47,7 +48,7 @@ export const bilanService = {
 
   // 💡 AJOUT : Fonctions d'exportation de production connectées au contrôleur des états de synthèse
   downloadExcel: async (exerciceId: number, dateFin: string): Promise<Blob> => {
-    const response = await axios.get(`${API_BASE}/bilan/${exerciceId}/excel`, {
+    const response = await api.get(`${API_BASE}/bilan/${exerciceId}/excel`, {
       params: { dateFin },
       responseType: 'blob'
     });
@@ -55,7 +56,7 @@ export const bilanService = {
   },
 
   downloadPDF: async (exerciceId: number, dateFin: string): Promise<Blob> => {
-    const response = await axios.get(`${API_BASE}/bilan/${exerciceId}/pdf`, {
+    const response = await api.get(`${API_BASE}/bilan/${exerciceId}/pdf`, {
       params: { dateFin },
       responseType: 'blob'
     });
