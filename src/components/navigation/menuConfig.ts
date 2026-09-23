@@ -42,7 +42,8 @@ export const menuItems: MenuItem[] = [
       { id: 'compta-grandlivre', label: 'Grand livre', icon: 'pi pi-book', path: '/compta/grandlivre' },
       { id: 'compta-balance', label: 'Balance', icon: 'pi  pi-compass', path: '/compta/balance' },
       { id: 'compta-bilan', label: 'Bilan', icon: 'pi pi-book', path: '/compta/bilan' },
-      { id: 'compta-resultat', label: 'Compte resultat', icon: 'pi pi-inbox', path: '/compta/resultat' }
+      { id: 'compta-resultat', label: 'Compte resultat', icon: 'pi pi-inbox', path: '/compta/resultat' },
+      { id: 'flux-tresorerie', label: 'Flux de tresorererie', icon: 'pi pi-inbox', path: 'compta/flux' }
       
     ],
   },

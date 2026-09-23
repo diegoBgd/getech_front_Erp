@@ -13,6 +13,7 @@ import { RubriqueFinancierePage } from '@/pages/compta/rubrique/RubriqueFinancie
 import { BilanPage } from '@/pages/compta/bilan/BilanPage';
 import { CompteResultatPage } from '@/pages/compta/resultat/CompteResultatPage';
 import { HistoriqueComptePage } from '@/pages/compta/movementcompte/HistoriqueComptePage';
+import { FluxTresoreriePage } from '@/pages/compta/flux/FluxTresoreriePage';
 /**
  * Déclaration centralisée des routes. Le MainLayout englobe toutes les
  * pages (Sidebar/TopBar/BottomBar communs), chaque page n'affiche que
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
       { path: 'compta/bilan', element: <BilanPage/> }, 
       { path: 'compta/resultat', element: <CompteResultatPage/> }, 
       { path: 'compta/movementcompte', element: <HistoriqueComptePage/> }, 
+      { path: 'compta/flux', element: <FluxTresoreriePage/> }, 
 
     ],
   },
