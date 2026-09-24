@@ -34,7 +34,7 @@ export const historiqueService = {
     dateFin?: string
   ): Promise<Blob> => {
     const response = await api.get(
-      `/api/finance/comptes/historique/${exerciceId}/export/excel`,
+      `${API_BASE}/${exerciceId}/export/excel`,
       {
         params: { codeCompte, dateDebut, dateFin },
         responseType: 'blob'
@@ -51,7 +51,7 @@ export const historiqueService = {
     dateFin?: string
   ): Promise<Blob> => {
     const response = await api.get(
-      `/api/finance/comptes/historique/${exerciceId}/export/pdf`,
+      `${API_BASE}/${exerciceId}/export/pdf`,
       {
         params: { codeCompte, dateDebut, dateFin },
         responseType: 'blob'

@@ -83,15 +83,15 @@ export const FluxTresoreriePage: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
             <div className="w-[150px]">
-              <Input type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} className="text-xs font-bold h-[38px] w-full" />
+              <Input type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} className="text-xs font-bold  w-full" />
             </div>
-            <Button variant="default" size="sm" onClick={executerCalculFlux} disabled={loading || !exerciceId} className="font-bold uppercase text-xs h-[38px] px-3 shrink-0">
+            <Button variant="default" size="sm" onClick={executerCalculFlux} disabled={loading || !exerciceId} className="font-bold uppercase text-xs h-[30px] px-3 shrink-0">
               <i className="pi pi-refresh text-xs mr-1"></i> Calculer
             </Button>
-            <Button variant="outline" size="sm" onClick={() => declencherExport('EXCEL')} disabled={loading || lignes.length === 0} className="font-bold uppercase text-xs h-[38px] px-3 shrink-0 border-navy-200 dark:border-navy-700 text-emerald-600 hover:bg-emerald-50/30">
+            <Button variant="outline" size="sm" onClick={() => declencherExport('EXCEL')} disabled={loading || lignes.length === 0} className="font-bold uppercase text-xs h-[30px] px-3 shrink-0 border-navy-200 dark:border-navy-700 text-emerald-600 hover:bg-emerald-50/30">
               <i className="pi pi-file-excel text-xs mr-1"></i> Excel
             </Button>
-            <Button variant="outline" size="sm" onClick={() => declencherExport('PDF')} disabled={loading || lignes.length === 0} className="font-bold uppercase text-xs h-[38px] px-3 shrink-0 border-navy-200 dark:border-navy-700 text-rose-600 hover:bg-rose-50/30">
+            <Button variant="outline" size="sm" onClick={() => declencherExport('PDF')} disabled={loading || lignes.length === 0} className="font-bold uppercase text-xs h-[30px] px-3 shrink-0 border-navy-200 dark:border-navy-700 text-rose-600 hover:bg-rose-50/30">
               <i className="pi pi-file-pdf text-xs mr-1"></i> PDF
             </Button>
           </div>

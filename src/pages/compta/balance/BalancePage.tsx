@@ -25,12 +25,14 @@ export const BalancePage: React.FC = () => {
     
     setLoading(true);
     try {
+     
       const data = await balanceService.getBalance(Number(exerciceId), { 
         dateDebut: dateDebut || undefined, 
         dateFin: dateFin || undefined, 
         typeBalance,
         centralisee: structureComptable === 'true'
       });
+       console.log("======= okkk==="+data);
       setLignes(data);
     } catch (err) {
       console.error(err);

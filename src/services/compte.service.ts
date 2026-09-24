@@ -11,6 +11,11 @@ export const compteService = {
     const response = await api.get<Compte[]>(API_URL);
     return response.data;
   },
+  // Récupérer tout le plan comptable
+  getComptesDetail: async (): Promise<Compte[]> => {
+    const response = await api.get<Compte[]>(`${API_URL}/detail`);
+    return response.data;
+  },
 
   // Créer un nouveau compte comptable (L'algorithme gère le parent automatiquement via le code)
   createCompte: async (compteData: CompteFormValues): Promise<Compte> => {

@@ -4,7 +4,7 @@ import { api } from "./api";
 
 export interface RubriqueFinanciere {
   id?: number;
-  code: string;
+  code?: string;
   intitule: string;
   typeEtat: 'BILAN' | 'COMPTE_RESULTAT' | 'FLUX_TRESO';
   nature: 'ACTIF' | 'PASSIF' | 'PRODUIT' | 'CHARGE';
@@ -25,7 +25,7 @@ export const rubriqueService = {
   },
 
   save: async (rubrique: RubriqueFinanciere): Promise<RubriqueFinanciere> => {
-    const res = await api.post<RubriqueFinanciere>('${API_BASE}', rubrique);
+    const res = await api.post<RubriqueFinanciere>(`${API_BASE}`, rubrique);
     return res.data;
   },
 

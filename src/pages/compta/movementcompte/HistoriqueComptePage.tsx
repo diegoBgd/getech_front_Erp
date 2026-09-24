@@ -47,7 +47,7 @@ export const HistoriqueComptePage: React.FC = () => {
 
   const initialiserPage = async () => {
     try {
-      const listComptes = await compteService.getAllComptes();
+      const listComptes = await compteService.getComptesDetail();
       setComptesOptions(listComptes.map(c => ({
         label: `${c.code} - ${c.intitule.toUpperCase()}`,
         value: c.code
