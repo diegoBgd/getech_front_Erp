@@ -32,7 +32,7 @@ export const BalancePage: React.FC = () => {
         typeBalance,
         centralisee: structureComptable === 'true'
       });
-       console.log("======= okkk==="+data);
+      
       setLignes(data);
     } catch (err) {
       console.error(err);

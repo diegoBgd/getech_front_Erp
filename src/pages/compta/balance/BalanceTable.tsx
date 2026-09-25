@@ -13,7 +13,9 @@ export const BalanceTable: React.FC<TableProps> = ({ lignes, typeCols, fmt }) =>
   useEffect(() => { setStart(0); }, [typeCols, size]);
 
   const rawData = Array.isArray(lignes) ? lignes : (lignes && typeof lignes === 'object' && 'lignes' in lignes) ? (lignes as any).lignes : [];
-  const dt = rawData.filter((l: any) => l.codeCompte && (l.codeCompte.length >= 4 || !rawData.some((s: any) => s.codeCompte.startsWith(l.codeCompte) && s.codeCompte !== l.codeCompte)));
+  
+  // 💡 CORRECTIF CORE COMPTABILITÉ : Filtre strict pour sommer UNIQUEMENT les comptes feuilles de mouvements (sans enfant)
+  const dt = rawData.filter((l: any) => l.codeCompte && !rawData.some((s: any) => s.codeCompte !== l.codeCompte && s.codeCompte.startsWith(l.codeCompte)));
 
   const sID = dt.reduce((s: number, l: any) => s + (l.soldeInitialDebiteur || 0), 0);
   const sIC = dt.reduce((s: number, l: any) => s + (l.soldeInitialCrediteur || 0), 0);
@@ -22,7 +24,6 @@ export const BalanceTable: React.FC<TableProps> = ({ lignes, typeCols, fmt }) =>
   const sFD = dt.reduce((s: number, l: any) => s + (l.soldeFinalDebiteur || 0), 0);
   const sFC = dt.reduce((s: number, l: any) => s + (l.soldeFinalCrediteur || 0), 0);
 
-  // 💡 CORRECTIF DE POLICE : Remplacement de font-tabular/font-mono par font-sans antialiased (Zéro standard, ovale et reposant)
   const sty = (r: any) => {
     const len = r.codeCompte ? r.codeCompte.length : 4;
     return len < 3 ? 'bg-navy-100/70 font-black text-navy-950 py-1 text-[10.5px] font-sans antialiased' : len === 3 ? 'bg-navy-50/50 font-bold text-navy-900 py-1 text-[10.5px] font-sans antialiased' : 'font-medium py-1 text-navy-700 text-[9.5px] font-sans antialiased';

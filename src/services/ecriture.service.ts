@@ -51,6 +51,12 @@ export const ecritureService = {
   deletePiece: async (id: number): Promise<void> => {
     await api.delete(`${API_BASE}/delete/${id}`);
   },
+  obtenirSoldeCompteFlash: async (exerciceId: number, codeCompte: string): Promise<number> => {
+    const res = await api.get<number>(`${API_BASE}/solde-actuel/${exerciceId}`, {
+      params: { codeCompte }
+    });
+    return res.data;
+  },
 rechercherPieces: async (
     exerciceId: number,
     codeJournal?: string,
