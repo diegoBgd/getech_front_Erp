@@ -26,8 +26,9 @@ export const menuItems: MenuItem[] = [
     children: [
       { id: 'compta-exercice', label: 'Exercice comptable', icon: 'pi pi-calendar', path: '/compta/exercice' },
       { id: 'compta-parametreod', label: 'Paramètres specifiques', icon: 'pi pi-share-alt', path: '/compta/parametreod' },
-      { id: 'compta-rubrique', label: 'Paramètres rubrique', icon: 'pi pi-palette', path: '/compta/rubrique' }
-      
+      { id: 'compta-rubrique', label: 'Paramètres rubrique', icon: 'pi pi-palette', path: '/compta/rubrique' },
+      { id: 'compta-periode', label: 'Périodes clôture', icon: 'pi pi-verified', path: '/compta/periodes' }
+     
     ],
   },
   {
@@ -44,7 +45,7 @@ export const menuItems: MenuItem[] = [
       { id: 'compta-bilan', label: 'Bilan', icon: 'pi pi-book', path: '/compta/bilan' },
       { id: 'compta-resultat', label: 'Compte resultat', icon: 'pi pi-inbox', path: '/compta/resultat' },
       { id: 'compta-flux', label: 'Flux de tresorererie', icon: 'pi pi-inbox', path: '/compta/flux' }
-      
+       
     ],
   },
   {
