@@ -6,7 +6,7 @@ import { PlanComptablePage } from '@/pages/compta/compte/PlanComptablePage';
 import { JournalPage } from '@/pages/compta/journal/JournalPage';
 import { SaisieEcriturePage } from '@/pages/compta/ecritures/SaisieEcriturePage';
 import { ExercicePage } from '@/pages/compta/exercice/ExercicePage';
-import { ParametresPage } from '@/pages/compta/parametreod/ParametresPage';
+
 import { GrandLivrePage } from '@/pages/compta/grandlivre/GrandLivrePage';
 import { BalancePage } from '@/pages/compta/balance/BalancePage';
 import { RubriqueFinancierePage } from '@/pages/compta/rubrique/RubriqueFinancierePage';
@@ -15,6 +15,7 @@ import { CompteResultatPage } from '@/pages/compta/resultat/CompteResultatPage';
 import { HistoriqueComptePage } from '@/pages/compta/movementcompte/HistoriqueComptePage';
 import { FluxTresoreriePage } from '@/pages/compta/flux/FluxTresoreriePage';
 import { GestionPeriodesPage } from '@/pages/compta/periodes/GestionPeriodesPage';
+import { ParametreOdPage } from '@/pages/compta/parametreod/ParametresPage';
 /**
  * Déclaration centralisée des routes. Le MainLayout englobe toutes les
  * pages (Sidebar/TopBar/BottomBar communs), chaque page n'affiche que
@@ -35,7 +36,7 @@ export const router = createBrowserRouter([
       { path: 'compta/journal', element: <JournalPage/> }, 
       { path: 'compta/ecritures', element: <SaisieEcriturePage/> }, 
       { path: 'compta/exercice', element: <ExercicePage/> }, 
-      { path: 'compta/parametreod', element: <ParametresPage/> }, 
+      { path: 'compta/parametreod', element: <ParametreOdPage /> }, 
       { path: 'compta/grandlivre', element: <GrandLivrePage/> }, 
       { path: 'compta/balance', element: <BalancePage/> },
       { path: 'compta/rubrique', element: <RubriqueFinancierePage/> }, 
