@@ -1,126 +1,135 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Divider } from 'primereact/divider';
+import { Divider } from 'primereact/divider'; 
 import { Toast } from 'primereact/toast';
-import type { EcritureComptableDto } from '@/types';
-import { ecritureService } from '@/services/ecriture.service';
-import { ModalConfirm } from '@/components/ui/modal-confirm';
+import { ecritureService } from '@/services/ecriture.service'; 
 import { Button } from '@/components/ui/button';
-import { SaisieEcritureForm } from '@/components/forms/SaisieEcritureForm';
+import { SaisieEcritureForm } from '@/components/forms/SaisieEcritureForm'; 
 import { ListePiecesModal } from './ListePiecesModal';
 import { useExerciceGlobal } from '@/contexts/ExerciceContext';
 
 export const SaisieEcriturePage: React.FC = () => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); 
   const [initialisation, setInitialisation] = useState(true);
-  const [modalPiecesVisible, setModalPiecesVisible] = useState(false);
-  const [ecritureEnEdition, setEcritureEnEdition] = useState<EcritureComptableDto | null>(null);
-  const toastRef = useRef<Toast>(null);
+  const [modalPiecesVisible, setModalPiecesVisible] = useState(false); 
+  const [ecritureEnEdition, setEcritureEnEdition] = useState<any>(null);
+  const toastRef = useRef<Toast>(null); 
+  const [journaux, setJournaux] = useState<any[]>([]); 
+  const [comptes, setComptes] = useState<any[]>([]);
+  const { exercicesOptions, exerciceActif } = useExerciceGlobal();
 
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [pieceIdA_Supprimer, setPieceIdA_Supprimer] = useState<number | null>(null);
-  const [pieceNumeroA_Supprimer, setPieceNumeroA_Supprimer] = useState('');
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  
-  const [journaux, setJournaux] = useState<{ label: string; value: string }[]>([]);
-  const [comptes, setComptes] = useState<{ label: string; value: string }[]>([]);
-  const { exerciceId, exercicesOptions } = useExerciceGlobal();
+  const estCloture = exerciceActif?.statut === 'CLOTURE';
+  const estDejaValidee = ecritureEnEdition?.validee === true; 
+  const estVerrouilleAEdition = estCloture || estDejaValidee;
 
-  const chargerDonneesReferentiels = async () => {
+  const chargerReferentiels = async () => {
     try {
       const [listJournaux, listComptes] = await Promise.all([
         ecritureService.getJournaux(),
         ecritureService.getComptesDetail()
       ]);
-      setJournaux(listJournaux.map(j => {
-        const lbl = (j.libelle || j.libelleJournal || j.intitule || 'Journal').toUpperCase();
-        const txt = `${j.code} - ${lbl.includes('JOURNAL') ? lbl : 'JOURNAL DES ' + lbl}`;
-        return { label: txt, optionLabel: txt, text: txt, value: j.code };
-      }));
-      setComptes(listComptes.map(c => {
-        const txt = `${c.code} - ${(c.intitule || '').toUpperCase()}`;
-        return { label: txt, optionLabel: txt, text: txt, value: c.code };
-      }));
-    } catch (err) { console.error(err); } finally { setInitialisation(false); }
+      setJournaux((listJournaux || []).map(j => ({ 
+        label: `${j.code} - ${(j.intitule || 'Journal').toUpperCase()}`, 
+        value: j.code 
+      })));
+      setComptes((listComptes || []).map(c => ({ 
+        label: `${c.code} - ${(c.intitule || '').toUpperCase()}`, 
+        value: c.code 
+      })));
+    } catch { 
+      console.error("Erreur d'extraction des référentiels"); 
+    } finally { 
+      setInitialisation(false); 
+    }
   };
 
-  const handleChargerPieceDetails = async (id: number) => {
-    setLoading(true);
-    try {
-      const apiData = await ecritureService.getPieceDetails(id);
-      const struct: EcritureComptableDto = {
-        id: apiData.id, numeroPiece: apiData.numeroPiece || '', datePiece: apiData.datePiece || '',
-        libelleGeneral: apiData.libelleGeneral || apiData.reference || '',
-        codeJournal: apiData.codeJournal || (apiData.journal ? apiData.journal.code : ''),
-        exerciceId: Number(apiData.exerciceId || (apiData.exercice ? apiData.exercice.id : 0)),
-        lignes: Array.isArray(apiData.lignes) ? apiData.lignes.map((l: any) => ({
-          id: l.id, codeCompte: l.codeCompte || (l.compte ? l.compte.code : ''),
-          libelleLigne: l.libelleLigne || l.libelle || '', debit: Number(l.debit) || 0, credit: Number(l.credit) || 0
-        })) : []
-      };
-      setEcritureEnEdition(struct);
-      toastRef.current?.show({ severity: 'info', summary: 'Chargement', detail: `Pièce N° ${struct.numeroPiece} prête.` });
-    } catch (err) { console.error(err); } finally { setLoading(false); }
-  };
+  useEffect(() => { chargerReferentiels(); }, []);
 
-  const handleExecuteDeletePiece = async () => {
-    if (!pieceIdA_Supprimer) return;
-    setDeleteLoading(true);
-    try {
-      await ecritureService.deletePiece(pieceIdA_Supprimer);
-      setDeleteModalVisible(false); setPieceIdA_Supprimer(null); setModalPiecesVisible(true);
-      toastRef.current?.show({ severity: 'success', summary: 'Supprimé', detail: `La pièce ${pieceNumeroA_Supprimer} a été effacée.` });
-    } catch (err) { console.error(err); } finally { setDeleteLoading(false); }
-  };
-
-  useEffect(() => {
-    (window as any).triggerDeletePieceComptable = (id: number, numero: string) => {
-      setPieceIdA_Supprimer(id); setPieceNumeroA_Supprimer(numero); setModalPiecesVisible(false); setDeleteModalVisible(true);
-    };
-    chargerDonneesReferentiels();
-    return () => { delete (window as any).triggerDeletePieceComptable; };
-  }, []);
-
-  const handleEnregistrerEcriture = async (payload: EcritureComptableDto) => {
+  const handleEnregistrerEcriture = async (payload: any) => {
+    if (estVerrouilleAEdition) return;
     setLoading(true);
     try {
       if (ecritureEnEdition?.id) {
-        await ecritureService.updatePiece(ecritureEnEdition.id, payload);
-        toastRef.current?.show({ severity: 'success', summary: 'Mis à jour', detail: "Pièce modifiée avec succès." });
+        await ecritureService.updatePiece(Number(ecritureEnEdition.id), payload);
+        toastRef.current?.show({ severity: 'success', summary: 'Mis à jour', detail: "La pièce a été modifiée avec succès." });
       } else {
         await ecritureService.enregistrerPiece(payload);
-        toastRef.current?.show({ severity: 'success', summary: 'Enregistré', detail: "Pièce créée avec succès." });
+        toastRef.current?.show({ severity: 'success', summary: 'Enregistré', detail: "La pièce a été créée avec succès." });
       }
-      setTimeout(() => window.location.reload(), 1200);
-    } catch (err) {
-      console.error(err);
-      toastRef.current?.show({ severity: 'error', summary: 'Erreur', detail: "Échec de l'enregistrement." });
+      setTimeout(() => window.location.reload(), 1100);
+    } catch (err: any) {
+      // 💡 CORRECTIF DE SÉCURITÉ TEXTUELLE : Extrait le message textuel pur pour le Toast
+      let detailErreurTextuel = "Erreur de validation réseau.";
+      
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          detailErreurTextuel = err.response.data;
+        } else if (err.response.data.message) {
+          detailErreurTextuel = err.response.data.message;
+        } else if (err.response.data.error) {
+          detailErreurTextuel = err.response.data.error;
+        }
+      }
+
+      toastRef.current?.show({ 
+        severity: 'error', 
+        summary: '🔒 Action Refusée', 
+        detail: detailErreurTextuel,
+        life: 5000
+      });
+    } finally { setLoading(false); }
+  };
+
+  const handleSelectionnerPieceDepuisModal = async (pieceChoisie: any) => {
+    setModalPiecesVisible(false); 
+    if (!pieceChoisie) return;
+    const numeroPieceComposite = pieceChoisie.numeroPiece || pieceChoisie.reference;
+    setLoading(true);
+    try {
+      const resData = await ecritureService.getPieceByNumero(numeroPieceComposite);
+      setEcritureEnEdition(Array.isArray(resData) ? resData : resData);
+    } catch {
+      toastRef.current?.show({ severity: 'error', summary: 'Échec', detail: "Erreur lors du chargement des écritures." });
     } finally { setLoading(false); }
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto animate-fade-in font-sans antialiased">
+    <div className="p-6 max-w-7xl mx-auto font-sans antialiased animate-fade-in">
       <Toast ref={toastRef} position="top-right" className="text-xs font-bold font-sans" />
-      <ModalConfirm visible={deleteModalVisible} title="⚠️ Suppression" message={`Confirmez-vous la destruction définitive de la pièce N° ${pieceNumeroA_Supprimer} ?`} confirmLabel="Supprimer" cancelLabel="Annuler" variant="destructive" loading={deleteLoading} onConfirm={handleExecuteDeletePiece} onCancel={() => { setDeleteModalVisible(false); setModalPiecesVisible(true); }} />
-
       <div className="bg-white dark:bg-navy-900 rounded-xl border border-navy-100 p-6 flex flex-col shadow-sm">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h2 className="text-base font-bold text-navy-900 dark:text-navy-50">{ecritureEnEdition ? `📝 Édition de la Pièce N° ${ecritureEnEdition.numeroPiece}` : "Saisie d'une Pièce Comptable (Partie Double)"}</h2>
-            <p className="text-xs text-navy-400">Enregistrement et modification des écritures avec contrôle de contrepartie</p>
+        
+        {estDejaValidee && (
+          <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2 select-none">
+            <i className="pi pi-verified text-sm"></i> 🔒 SCELLÉ D'AUDIT : Cette pièce comptable a été validée définitivement. La modification et la suppression sont désactivées.
           </div>
-          <Button type="button" variant="outline" size="sm" onClick={() => setModalPiecesVisible(true)} className="font-bold text-xs h-[30px] border-navy-200 text-navy-700 hover:bg-navy-50"><i className="pi pi-search mr-2 text-xs"></i> Rechercher</Button>
+        )}
+
+        {estCloture && (
+          <div className="mb-5 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-center gap-3 font-semibold select-none">
+            <i className="pi pi-lock text-base text-rose-600 animate-pulse" />
+            <div>
+              <p className="font-bold text-rose-900">📚 EXERCICE COMPTABLE ARCHIVÉ & CLÔTURÉ ANNUELLEMENT</p>
+              <p className="text-rose-700 font-medium text-[11px] mt-0.5">Cet exercice est clos de manière contractuelle. Aucun mouvement de débit/crédit n'est toléré.</p>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-base font-bold text-navy-900 dark:text-navy-100">
+              {ecritureEnEdition ? `📝 Pièce : ${ecritureEnEdition.numeroPiece}` : "Saisie d'une Pièce Comptable (Partie Double)"}
+            </h2>
+            <p className="text-xs text-navy-400">Enregistrement sous contrôle de validation, clôtures périodiques et clôture annuelle globale</p>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => setModalPiecesVisible(true)} className="font-bold text-xs h-8 border-navy-200 text-navy-700 hover:bg-navy-50"><i className="pi pi-search mr-1.5"></i> Rechercher</Button>
         </div>
         
         <Divider className="my-4 border-navy-100" />
-        
-        {initialisation ? (
-          <div className="flex flex-col items-center justify-center py-24"><span className="animate-spin inline-block w-6 h-6 border-2 border-navy-500 border-t-transparent rounded-full"></span></div>
+        {initialisation || loading ? (
+          <div className="flex justify-center items-center py-20"><span className="animate-spin w-5 h-5 border-2 border-sky-600 border-t-transparent rounded-full" /></div>
         ) : (
-          /* 💡 INCORPORATION : Le canal onCancelEdit nettoie l'état d'édition pour basculer sur une saisie neuve */
-          <SaisieEcritureForm journaux={journaux} comptes={comptes} loading={loading} initialValues={ecritureEnEdition} onSubmit={handleEnregistrerEcriture} onCancelEdit={() => setEcritureEnEdition(null)} />
+          <SaisieEcritureForm journaux={journaux} comptes={comptes} loading={loading} initialValues={ecritureEnEdition} onSubmit={handleEnregistrerEcriture} isReadOnly={estVerrouilleAEdition} onCancelEdit={() => setEcritureEnEdition(null)} />
         )}
-        
-        <ListePiecesModal visible={modalPiecesVisible} onHide={() => setModalPiecesVisible(false)} onSelectPiece={handleChargerPieceDetails} journauxOptions={journaux} exercicesOptions={exercicesOptions} />
+        <ListePiecesModal visible={modalPiecesVisible} onHide={() => setModalPiecesVisible(false)} onSelectPiece={handleSelectionnerPieceDepuisModal} journauxOptions={journaux} exercicesOptions={(exercicesOptions || []).map(e => ({ label: e.label, value: Number(e.value) }))} />
       </div>
     </div>
   );

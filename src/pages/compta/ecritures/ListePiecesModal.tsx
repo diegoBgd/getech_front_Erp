@@ -9,11 +9,12 @@ import { Input } from '@/components/ui/input';
 import { useExerciceGlobal } from '@/contexts/ExerciceContext';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { CustomDataTable } from '@/components/ui/data-table';
+import { ModalConfirm } from '@/components/ui/modal-confirm'; // 💡 Ajout de la confirmation
 
 interface ListePiecesModalProps {
   visible: boolean;
   onHide: () => void;
-  onSelectPiece: (id: number) => void;
+  onSelectPiece: (piece: any) => void;
   journauxOptions: { label: string; value: string }[];
   exercicesOptions: { label: string; value: number }[];
 }
@@ -24,19 +25,44 @@ export const ListePiecesModal: React.FC<ListePiecesModalProps> = ({ visible, onH
   const [dtFin, setDtFin] = useState<string>('');
   const [pieces, setPieces] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const { exerciceId } = useExerciceGlobal();
+  const { exerciceId, exerciceActif } = useExerciceGlobal();
+
+  // 💡 ÉTATS POUR LA SUPPRESSION CHIRURGICALE INTERNE
+  const [modalSupprOpen, setModalSupprOpen] = useState<boolean>(false);
+  const [pieceASupprimer, setPieceSuppr] = useState<{ id: number; numero: string } | null>(null);
+
+  const estCloture = exerciceActif?.statut === 'CLOTURE';
 
   const lancerRecherchePieces = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!exerciceId) return;
     setLoading(true);
     try {
-      const data = await ecritureService.rechercherPieces(Number(exerciceId), jnlCode || undefined, dtDebut || undefined, dtFin || undefined);
-      setPieces(data);
+      const data = await (ecritureService.rechercherPieces as any)(
+        Number(exerciceId), 
+        jnlCode || undefined, 
+        dtDebut || undefined, 
+        dtFin || undefined
+      );
+      setPieces(data || []);
     } catch (err) { console.error(err); setPieces([]); } finally { setLoading(false); }
   };
 
   useEffect(() => { if (visible && exerciceId) lancerRecherchePieces(); }, [visible, exerciceId]);
+
+  // 💡 ACTION DE PURGE DIRECTE CONNECTÉE AU BACKEND
+  const handleConfirmerSuppressionRegistre = async () => {
+    if (!pieceASupprimer || estCloture) return;
+    setLoading(true);
+    setModalSupprOpen(false);
+    try {
+      await ecritureService.deletePiece(pieceASupprimer.id);
+      setPieceSuppr(null);
+      lancerRecherchePieces(); // Rafraîchit instantanément la table
+    } catch (err) {
+      console.error("Échec de la suppression de la pièce", err);
+    } finally { setLoading(false); }
+  };
 
   const formaterDateComptable = (dateRaw: string): string => {
     if (!dateRaw) return '-';
@@ -60,16 +86,19 @@ export const ListePiecesModal: React.FC<ListePiecesModalProps> = ({ visible, onH
       headerClassName="p-4 bg-navy-50/50 dark:bg-navy-800/40 border-b border-navy-100 dark:border-navy-800 text-sm font-bold text-navy-800 dark:text-navy-50 rounded-t-xl">
       <div className="space-y-4">
         
-        <form onSubmit={lancerRecherchePieces} className="grid grid-cols-1 md:grid-cols-[40%_20%_20%_10%] gap-3 bg-navy-50/30 p-3 rounded-xl border border-navy-100 items-end font-sans">
+        {/* Fenêtre de confirmation locale intégrée */}
+        <ModalConfirm visible={modalSupprOpen} title="⚠️ Destruction de Pièce du Registre" message={`Confirmez-vous la suppression définitive de la pièce ${pieceASupprimer?.numero} ? Tous les débits et crédits associés seront effacés.`} confirmLabel="Détruire la pièce" cancelLabel="Annuler" variant="destructive" onConfirm={handleConfirmerSuppressionRegistre} onCancel={() => setModalSupprOpen(false)} />
+
+        <form onSubmit={lancerRecherchePieces} className="grid grid-cols-1 md:grid-cols-[40%_20%_20%_10%] gap-3 bg-navy-50/30 dark:bg-navy-950/20 p-3 rounded-xl border border-slate-100 dark:border-navy-800 items-end font-sans">
           <div className="flex flex-col gap-1"><label className="text-[10px] font-bold text-navy-400 uppercase">Journal</label><Select value={jnlCode} options={[{ label: 'Tous les journaux', value: '' }, ...journauxOptions]} onChange={(e: any) => setJnlCode(e.value)} className="text-xs font-bold" /></div>
           <div className="flex flex-col gap-1"><label className="text-[10px] font-bold text-navy-400 uppercase">Du</label><Input type="date" value={dtDebut} onChange={(e) => setDtDebut(e.target.value)} className="text-xs font-medium" /></div>
           <div className="flex flex-col gap-1"><label className="text-[10px] font-bold text-navy-400 uppercase">Au</label><Input type="date" value={dtFin} onChange={(e) => setDtFin(e.target.value)} className="text-xs font-medium" /></div>
           <div className="flex flex-col gap-1"><Button type="submit" disabled={loading} variant="default" size="sm" className="text-xs w-full font-bold"><i className="pi pi-sliders-v mr-2 text-xs"></i>Filtrer</Button></div>
         </form>
 
-        <Divider className="my-2" />
+        <Divider className="my-2 border-slate-100 dark:border-navy-800" />
         
-        <div className="relative w-full min-h-[220px]">
+        <div className="relative w-full min-h-[220px] border border-slate-100 dark:border-navy-800 rounded-xl overflow-hidden">
           {loading && loadingTemplate()}
 
           <CustomDataTable value={pieces} emptyMessage="Aucune pièce trouvée pour cet exercice.">
@@ -77,17 +106,16 @@ export const ListePiecesModal: React.FC<ListePiecesModalProps> = ({ visible, onH
             <Column field="numeroPiece" header="N° Pièce" className="font-bold text-sky-600 dark:text-sky-400 font-sans antialiased text-center w-[130px]" />
             <Column field="codeJournal" header="Jnl" className="text-center w-[60px] font-bold uppercase font-sans" />
             <Column field="reference" header="Libellé / Référence de Pièce" className="uppercase font-medium text-navy-800 dark:text-navy-100 font-sans" />
-            {/* 💡 INCORPORATION DE LA DEVISE NATIONALE ET LISSAGE DES CHIFFRES (ZÉRO NON BARRÉ) */}
             <Column header="Montant Total" body={(r) => <span className="font-sans antialiased font-black text-navy-950 dark:text-navy-50 tracking-tight">{new Intl.NumberFormat('fr-BI').format(r.montantTotal || 0)} Fbu</span>} className="text-right w-[150px]" />
             <Column header="Actions" className="w-[140px] text-center font-sans" body={(r) => (
               <div className="flex items-center justify-center gap-1.5">
-                <Button type="button" variant="ghost" size="sm" onClick={() => { onSelectPiece(r.id); onHide(); }} className="h-7 text-[10px] uppercase font-bold px-2 text-navy-600 hover:bg-navy-50 dark:text-navy-300"><i className="pi pi-pencil text-[9px] mr-1"></i>Ouvrir</Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => (window as any).triggerDeletePieceComptable(r.id, r.numeroPiece)} className="h-7 text-[10px] uppercase font-bold text-rose-600 hover:bg-rose-50 px-2"><i className="pi pi-trash text-[9px] mr-1"></i>Suppr</Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => { onSelectPiece(r); onHide(); }} className="h-7 text-[10px] uppercase font-bold px-2 text-navy-600 hover:bg-navy-50 dark:text-navy-300"><i className="pi pi-pencil text-[9px] mr-1"></i>Ouvrir</Button>
+                {/* 💡 SOLUTION : Au clic, on stocke la pièce cible dans l'état et on ouvre le pop-up de confirmation s'il n'est pas clôturé */}
+                <Button type="button" variant="ghost" size="sm" disabled={estCloture} onClick={() => { setPieceSuppr({ id: r.id, numero: r.numeroPiece }); setModalSupprOpen(true); }} className="h-7 text-[10px] uppercase font-bold text-rose-600 hover:bg-rose-50 px-2 disabled:opacity-40"><i className="pi pi-trash text-[9px] mr-1"></i>Suppr</Button>
               </div>
             )} />
           </CustomDataTable>
         </div>
-
       </div>
     </Dialog>
   );

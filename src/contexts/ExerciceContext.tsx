@@ -1,51 +1,64 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
 import { exerciceService } from '@/services/exercice.service';
+import type { Exercice } from '@/types/exercice.types';
 
-interface ExerciceOption {
+// 💡 INTERFACE ENRICHIE POUR ASSURER LA COMPATIBILITÉ AVEC LE COMPOSANT SELECT UI
+export interface ExerciceSelectOption extends Exercice {
   label: string;
-  value: number;
+  value: string;
 }
 
 interface ExerciceContextType {
-  exerciceId: number | null;
-  setExerciceId: (id: number | null) => void;
-  exercicesOptions: ExerciceOption[];
-  loadingExercices: boolean;
+  exerciceId: string | null;
+  setExerciceId: (id: string | null) => void;
+  exercicesOptions: ExerciceSelectOption[];
+  exerciceActif: ExerciceSelectOption | null;
+  loadingContext: boolean;
 }
 
 const ExerciceContext = createContext<ExerciceContextType | undefined>(undefined);
 
-export const ExerciceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [exerciceId, setExerciceId] = useState<number | null>(null);
-  const [exercicesOptions, setExercicesOptions] = useState<ExerciceOption[]>([]);
-  const [loadingExercices, setLoadingExercices] = useState<boolean>(true);
+export const ExerciceGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [exerciceId, setExerciceId] = useState<string | null>(null);
+  const [exercicesOptions, setExercicesOptions] = useState<ExerciceSelectOption[]>([]);
+  const [loadingContext, setLoadingContext] = useState<boolean>(true);
 
-  useEffect(() => {
-    const initialiserExerciceGlobal = async () => {
-      try {
-        const list = await exerciceService.getOuvert();
-        const options = list.map((e: any) => ({
-          label: `${e.code} : ${e.libelle || 'Exercice'}`,
-          value: e.id
-        }));
-        setExercicesOptions(options);
-        
-        // Sélection automatique du premier exercice disponible par défaut
-        if (options.length > 0) {
-          setExerciceId(options[0].value);
-        }
-      } catch (err) {
-        console.error("Erreur d'initialisation de l'exercice global", err);
-      } finally {
-        setLoadingExercices(false);
+  const chargerTousLesExercices = async () => {
+    setLoadingContext(true);
+    try {
+      // 💡 EXTRACT GLOBALE : On charge absolument tous les exercices de l'ERP
+      const data = await exerciceService.getAll();
+      
+      // Mappage rigoureux pour alimenter le Dropdown/Select sans masquer les exercices clos
+      const optionsFormatees: ExerciceSelectOption[] = (data || []).map(e => ({
+        ...e,
+        value: String(e.id),
+        // Le libellé affiche explicitement le statut pour informer le Directeur Financier
+        label: `${e.libelle} - [${e.statut}]`
+      }));
+
+      setExercicesOptions(optionsFormatees);
+      
+      // Sélection intelligente par défaut à l'ouverture de la session
+      if (optionsFormatees.length > 0) {
+        const ouvert = optionsFormatees.find(e => e.statut === 'OUVERT');
+        // On se positionne sur l'exercice ouvert prioritairement, sinon sur le premier trouvé
+        setExerciceId(ouvert ? ouvert.value : optionsFormatees[0].value);
       }
-    };
-    initialiserExerciceGlobal();
-  }, []);
+    } catch (err) {
+      console.error("Erreur de synchronisation du contexte d'exercice", err);
+    } finally {
+      setLoadingContext(false);
+    }
+  };
+
+  useEffect(() => { chargerTousLesExercices(); }, []);
+
+  // 💡 LECTURE DYNAMIQUE AU CLIC : Récupère l'exercice choisi par l'utilisateur
+  const exerciceActif = exercicesOptions.find(e => e.value === exerciceId) || null;
 
   return (
-    <ExerciceContext.Provider value={{ exerciceId, setExerciceId, exercicesOptions, loadingExercices }}>
+    <ExerciceContext.Provider value={{ exerciceId, setExerciceId, exercicesOptions, exerciceActif, loadingContext }}>
       {children}
     </ExerciceContext.Provider>
   );
@@ -53,6 +66,6 @@ export const ExerciceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
 export const useExerciceGlobal = () => {
   const context = useContext(ExerciceContext);
-  if (!context) throw new Error("useExerciceGlobal doit être enveloppé dans un ExerciceProvider");
+  if (!context) throw new Error("useExerciceGlobal doit être enveloppé dans un ExerciceGlobalProvider");
   return context;
 };

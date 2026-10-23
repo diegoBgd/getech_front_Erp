@@ -20,13 +20,10 @@ export function TopBar() {
   const location = useLocation();
   const notifRef = useRef<OverlayPanel>(null);
 
-  // Récupération des éléments du contexte global de gestion des exercices
   const { exerciceId, setExerciceId, exercicesOptions } = useExerciceGlobal();
   const [estEnCoursDeChargement, setEstEnCoursDeChargement] = useState<boolean>(true);
 
-  // 💡 ANALYSE DE LA DISPONIBILITÉ DES DONNÉES
   useEffect(() => {
-    // Si l'application a fini d'interroger le service, on coupe l'état de chargement
     if (exercicesOptions && exercicesOptions.length >= 0) {
       setEstEnCoursDeChargement(false);
     }
@@ -37,7 +34,6 @@ export function TopBar() {
     else toggleMobile();
   };
 
-  // Détermination dynamique du libellé d'attente ou d'erreur
   const getPlaceholderSelect = () => {
     if (estEnCoursDeChargement) return "Chargement...";
     if (!exercicesOptions || exercicesOptions.length === 0) return "Aucun exercice trouvé";
@@ -59,16 +55,16 @@ export function TopBar() {
       </div>
 
       <div className="flex items-center justify-end gap-1.5">
-        {/* BLOC EXERCICE GLOBAL ADAPTATIF */}
         <div className="w-[140px] sm:w-[220px] flex items-center gap-2 relative animate-fade-in shrink-0">
           <i className="pi pi-calendar-clock text-base text-navy-400 dark:text-navy-500" />
           <div className="w-full">
             <Select 
               value={exerciceId} 
               options={exercicesOptions || []} 
-              onChange={(e: any) => setExerciceId(e.value ? Number(e.value) : null)}
+              // 💡 LE CORRECTIF CRUCIAL : Transmission de e.value sous forme de string brute sans conversion en Number
+              onChange={(e: any) => setExerciceId(e.value ? String(e.value) : null)}
               placeholder={getPlaceholderSelect()}
-              disabled={!exercicesOptions || exercicesOptions.length === 0} // Désactive le champ s'il n'y a pas d'exercice
+              disabled={!exercicesOptions || exercicesOptions.length === 0}
               className={`w-full text-xs font-bold shadow-3xs h-[32px] ${
                 (!exercicesOptions || exercicesOptions.length === 0) && !estEnCoursDeChargement ? 'border-red-accent-500 text-red-500 bg-red-50/10' : ''
               }`} 

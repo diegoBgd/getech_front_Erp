@@ -9,7 +9,7 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/erp/comp
 export const ecritureService = {
   // Enregistrer une pièce comptable complète (En-tête + Lignes)
   enregistrerPiece: async (data: EcritureComptableDto): Promise<any> => {
-   
+
     const response = await api.post(`${API_BASE}/saisie`, data);
     return response.data;
   },
@@ -32,9 +32,14 @@ export const ecritureService = {
     // On ne garde que les comptes de détail (non collectifs) pour la saisie directe
     return response.data.filter((c: any) => !c.isCollectif);
   },
-    // Récupérer toutes les pièces (pour alimenter le tableau de l'historique)
-  getAllPieces: async (): Promise<any[]> => {
-    const response = await api.get(`${API_BASE}/all`);
+  rechercherPieces: async (exerciceId: number, jnlCode?: string, dtDebut?: string, dtFin?: string): Promise<any[]> => {
+    const response = await api.get(`${API_BASE}/recherche/${exerciceId}`, {
+      params: {
+        codeJournal: jnlCode || undefined,
+        dateDebut: dtDebut || undefined,
+        dateFin: dtFin || undefined
+      }
+    });
     return response.data;
   },
 
@@ -57,15 +62,16 @@ export const ecritureService = {
     });
     return res.data;
   },
-rechercherPieces: async (
-    exerciceId: number,
-    codeJournal?: string,
-    dateDebut?: string,
-    dateFin?: string
-  ): Promise<EcritureComptableDto[]> => {
-    const response = await api.get<EcritureComptableDto[]>(`${API_BASE}/recherche/${exerciceId}`, {
-      params: { codeJournal, dateDebut, dateFin }
-    });
+
+  getPieceByNumero: async (numeroPiece: string): Promise<any> => {
+    // 💡 SÉCURISATION : encodeURIComponent gère proprement les tirets et masques composites (ex: BQ-2026-00007)
+    const numeroEncode = encodeURIComponent(String(numeroPiece).trim());
+    const response = await api.get(`${API_BASE}/piece/${numeroEncode}`);
     return response.data;
   },
+  validerDefinitivement: async (id: number): Promise<string> => {
+    const response = await api.put(`${API_BASE}/valider/${id}`);
+    return response.data;
+  },
+ 
 };

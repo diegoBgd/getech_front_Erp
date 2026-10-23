@@ -3,7 +3,7 @@ import { PrimeReactProvider } from 'primereact/api';
 import { SidebarProvider } from '@/contexts/SidebarContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { ExerciceProvider } from '@/contexts/ExerciceContext'; // 💡 AJOUT DE L'IMPORTATION
+import { ExerciceGlobalProvider } from '@/contexts/ExerciceContext';
 import { router } from '@/routes/AppRouter';
 
 
@@ -19,9 +19,9 @@ function App() {
         <AuthProvider>
           <SidebarProvider>
             {/* 💡 INTÉGRATION DE L'EXERCICE PROVIDER GLOBAL */}
-            <ExerciceProvider>
+             <ExerciceGlobalProvider>
               <RouterProvider router={router} />
-            </ExerciceProvider>
+             </ExerciceGlobalProvider>
           </SidebarProvider>
         </AuthProvider>
       </ThemeProvider>

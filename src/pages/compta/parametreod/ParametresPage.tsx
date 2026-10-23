@@ -16,7 +16,7 @@ export const ParametreOdPage: React.FC = () => {
       const [cfg, jl, cp] = await Promise.all([parametreService.getParametres(), parametreService.getJournauxParametres(), parametreService.getComptesParametres()]);
       if (cfg && cfg.id) setForm(cfg);
       const rJ = Array.isArray(jl) ? jl : (jl && (jl as any).data) || []; const rC = Array.isArray(cp) ? cp : (cp && (cp as any).data) || [];
-      setJnlOpt(rJ.map((j: any) => ({ label: `${j.code} - ${j.codeJournal || j.libelle || 'Jnl'}`, value: j.code })));
+      setJnlOpt(rJ.map((j: any) => ({ label: `${j.code} - ${j.codeJournal || j.intitule || 'Jnl'}`, value: j.code })));
       setCptOpt(rC.map((c: any) => ({ label: `${c.code} - ${c.intitule || ''}`, value: c.code })));
     } catch { toast.current?.show({ severity: 'error', summary: 'Erreur', detail: 'Échec de synchronisation.' }); } finally { setLoading(false); }
   };

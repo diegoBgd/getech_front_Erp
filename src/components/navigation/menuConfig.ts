@@ -28,7 +28,19 @@ export const menuItems: MenuItem[] = [
       { id: 'compta-parametreod', label: 'Paramètres specifiques', icon: 'pi pi-share-alt', path: '/compta/parametreod' },
       { id: 'compta-rubrique', label: 'Paramètres rubrique', icon: 'pi pi-palette', path: '/compta/rubrique' },
       { id: 'compta-periode', label: 'Périodes clôture', icon: 'pi pi-verified', path: '/compta/periodes' }
-     
+
+    ],
+  },
+  {
+    id: 'utilitaire',
+    label: 'Utilitaire',
+    icon: 'pi pi-wrench',
+    children: [
+      { id: 'compta-ouverture', label: 'Ouverture Exercice ', icon: 'pi pi-lock-open', path: '/compta/ouverture' },
+      { id: 'compta-cloture', label: 'Clôture Exercice ', icon: 'pi pi-lock', path: '/compta/cloture' }
+
+
+
     ],
   },
   {
@@ -39,13 +51,14 @@ export const menuItems: MenuItem[] = [
       { id: 'compta-plancomptable', label: 'Plan comptable', icon: 'pi pi-sitemap', path: '/compta/compte' },
       { id: 'compta-journal', label: 'Journal', icon: 'pi pi-folder', path: '/compta/journal' },
       { id: 'compta-ecriture', label: 'Saisie des écritures', icon: 'pi pi-file-edit', path: '/compta/ecritures' },
+      { id: 'compta-validation', label: 'Validation  écritures', icon: 'pi pi-check-square', path: '/compta/validation' },
       { id: 'compta-movementcompte', label: 'Historique du compte', icon: 'pi pi-history', path: '/compta/movementcompte' },
       { id: 'compta-grandlivre', label: 'Grand livre', icon: 'pi pi-book', path: '/compta/grandlivre' },
       { id: 'compta-balance', label: 'Balance', icon: 'pi  pi-compass', path: '/compta/balance' },
       { id: 'compta-bilan', label: 'Bilan', icon: 'pi pi-book', path: '/compta/bilan' },
       { id: 'compta-resultat', label: 'Compte resultat', icon: 'pi pi-inbox', path: '/compta/resultat' },
       { id: 'compta-flux', label: 'Flux de tresorererie', icon: 'pi pi-inbox', path: '/compta/flux' }
-       
+
     ],
   },
   {
